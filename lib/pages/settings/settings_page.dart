@@ -86,6 +86,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: Colors.teal,
         title: const Text('Configurações'),
         elevation: 2,
       ),
@@ -139,8 +140,11 @@ class _SettingsPageState extends State<SettingsPage> {
                           ),
                           child: const Row(
                             children: [
-                              Icon(Icons.check_circle,
-                                  color: Colors.green, size: 18),
+                              Icon(
+                                Icons.check_circle,
+                                color: Colors.green,
+                                size: 18,
+                              ),
                               SizedBox(width: 8),
                               Text('SMTP configurado e pronto para uso.'),
                             ],
@@ -279,8 +283,9 @@ class _SettingsPageState extends State<SettingsPage> {
                       Container(
                         padding: const EdgeInsets.all(10),
                         decoration: BoxDecoration(
-                          color: theme.colorScheme.primaryContainer
-                              .withValues(alpha: 0.3),
+                          color: theme.colorScheme.primaryContainer.withValues(
+                            alpha: 0.3,
+                          ),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Column(

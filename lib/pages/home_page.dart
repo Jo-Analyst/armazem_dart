@@ -100,6 +100,57 @@ class _HomePageState extends State<HomePage> {
     final isDesktop = MediaQuery.of(context).size.width >= 800;
 
     return Scaffold(
+      appBar: !isDesktop
+          ? AppBar(title: const Text('Almoxarifado'), elevation: 2)
+          : null,
+      drawer: !isDesktop
+          ? Drawer(
+              child: ListView(
+                padding: EdgeInsets.zero,
+                children: [
+                  DrawerHeader(
+                    decoration: BoxDecoration(color: theme.colorScheme.primary),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.warehouse,
+                          size: 48,
+                          color: theme.colorScheme.onPrimary,
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          'Almoxarifado',
+                          style: TextStyle(
+                            color: theme.colorScheme.onPrimary,
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  ...List.generate(_destinations.length, (index) {
+                    final dest = _destinations[index];
+                    return ListTile(
+                      leading: _selectedIndex == index
+                          ? dest.selectedIcon
+                          : dest.icon,
+                      title: Text(dest.label),
+                      selected: _selectedIndex == index,
+                      selectedTileColor: theme.colorScheme.primaryContainer,
+                      onTap: () {
+                        setState(() {
+                          _selectedIndex = index;
+                        });
+                        Navigator.pop(context);
+                      },
+                    );
+                  }),
+                ],
+              ),
+            )
+          : null,
       body: Row(
         children: [
           if (isDesktop) ...[
@@ -115,8 +166,11 @@ class _HomePageState extends State<HomePage> {
                 padding: const EdgeInsets.symmetric(vertical: 24.0),
                 child: Column(
                   children: [
-                    Icon(Icons.warehouse,
-                        size: 48, color: theme.colorScheme.primary),
+                    Icon(
+                      Icons.warehouse,
+                      size: 48,
+                      color: theme.colorScheme.primary,
+                    ),
                     const SizedBox(height: 8),
                     if (MediaQuery.of(context).size.width >= 1100)
                       Text(
@@ -145,13 +199,16 @@ class _HomePageState extends State<HomePage> {
                 return FadeTransition(
                   opacity: animation,
                   child: SlideTransition(
-                    position: Tween<Offset>(
-                      begin: const Offset(0.03, 0),
-                      end: Offset.zero,
-                    ).animate(CurvedAnimation(
-                      parent: animation,
-                      curve: Curves.easeOutCubic,
-                    )),
+                    position:
+                        Tween<Offset>(
+                          begin: const Offset(0.03, 0),
+                          end: Offset.zero,
+                        ).animate(
+                          CurvedAnimation(
+                            parent: animation,
+                            curve: Curves.easeOutCubic,
+                          ),
+                        ),
                     child: child,
                   ),
                 );
@@ -164,17 +221,6 @@ class _HomePageState extends State<HomePage> {
           ),
         ],
       ),
-      bottomNavigationBar: !isDesktop
-          ? NavigationBar(
-              selectedIndex: _selectedIndex,
-              onDestinationSelected: (index) {
-                setState(() {
-                  _selectedIndex = index;
-                });
-              },
-              destinations: _destinations,
-            )
-          : null,
     );
   }
 }

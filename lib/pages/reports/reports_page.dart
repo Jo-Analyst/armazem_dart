@@ -224,6 +224,7 @@ class _ReportsPageState extends State<ReportsPage> {
 
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: Colors.teal,
         title: const Text('Relatório de Movimentações'),
         elevation: 2,
         actions: [

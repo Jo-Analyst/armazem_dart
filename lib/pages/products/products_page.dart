@@ -305,6 +305,7 @@ class _ProductsPageState extends State<ProductsPage> {
 
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: Colors.teal,
         title: Text(
           _selectedProduct != null ? 'Produto Selecionado' : 'Produtos',
         ),

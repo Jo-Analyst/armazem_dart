@@ -593,6 +593,7 @@ class _MovementsPageState extends State<MovementsPage> {
 
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: Colors.teal,
         title: Text(
           _selectedMovement != null
               ? 'Movimentação Selecionada'

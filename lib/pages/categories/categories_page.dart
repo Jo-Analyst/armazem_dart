@@ -161,6 +161,7 @@ class _CategoriesPageState extends State<CategoriesPage> {
 
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: Colors.teal,
         title: Text(
           _selectedCategory != null ? 'Categoria Selecionada' : 'Categorias',
         ),
@@ -254,7 +255,9 @@ class _CategoriesPageState extends State<CategoriesPage> {
                     cat.nome,
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
-                      color: _selectedCategory?.id == cat.id ? Colors.black : null,
+                      color: _selectedCategory?.id == cat.id
+                          ? Colors.black
+                          : null,
                     ),
                   ),
                   trailing: _selectedCategory?.id == cat.id
