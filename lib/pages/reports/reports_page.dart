@@ -245,8 +245,8 @@ class _ReportsPageState extends State<ReportsPage> {
                         : () => _compartilharRelatorio(list),
                   ),
                   IconButton(
-                    icon: const Icon(Icons.picture_as_pdf),
-                    tooltip: 'Gerar PDF',
+                    icon: const Icon(Icons.print),
+                    tooltip: 'Imprimir',
                     onPressed: list.isEmpty ? null : () => _gerarPdf(list),
                   ),
                 ],
@@ -407,8 +407,8 @@ class _ReportsPageState extends State<ReportsPage> {
           final list = _controller.movements.value;
           return FloatingActionButton.extended(
             onPressed: list.isEmpty ? null : () => _gerarPdf(list),
-            icon: const Icon(Icons.picture_as_pdf),
-            label: const Text('Gerar PDF'),
+            icon: const Icon(Icons.print),
+            label: const Text('Imprimir'),
           );
         },
       ),

@@ -25,6 +25,7 @@ class _MovementsPageState extends State<MovementsPage> {
   DateTime? _dataEntrada;
   DateTime? _dataSaida;
   double _saldoAtual = 0.0;
+  MovementModel? _selectedMovement;
 
   final _dateFormat = DateFormat('dd/MM/yyyy');
   final _dateTimeFormat = DateFormat('dd/MM/yyyy HH:mm');
@@ -592,8 +593,37 @@ class _MovementsPageState extends State<MovementsPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Movimentações de Estoque'),
+        title: Text(
+          _selectedMovement != null
+              ? 'Movimentação Selecionada'
+              : 'Movimentações de Estoque',
+        ),
         elevation: 2,
+        actions: _selectedMovement != null
+            ? [
+                IconButton(
+                  icon: const Icon(Icons.edit),
+                  tooltip: 'Editar',
+                  onPressed: () {
+                    _showAddDialog(_selectedMovement);
+                    setState(() => _selectedMovement = null);
+                  },
+                ),
+                IconButton(
+                  icon: const Icon(Icons.delete),
+                  tooltip: 'Excluir',
+                  onPressed: () {
+                    _confirmDelete(_selectedMovement!);
+                    setState(() => _selectedMovement = null);
+                  },
+                ),
+                IconButton(
+                  icon: const Icon(Icons.close),
+                  tooltip: 'Cancelar seleção',
+                  onPressed: () => setState(() => _selectedMovement = null),
+                ),
+              ]
+            : null,
       ),
       body: SignalBuilder(
         builder: (context) {
@@ -649,7 +679,18 @@ class _MovementsPageState extends State<MovementsPage> {
               return Card(
                 margin: const EdgeInsets.only(bottom: 10.0),
                 elevation: 1,
+                // shape:
+                shape: _selectedMovement?.id == mov.id
+                    ? RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        side: BorderSide(color: Colors.grey),
+                      )
+                    : Border(bottom: BorderSide(color: Colors.grey)),
+                color: _selectedMovement?.id == mov.id
+                    ? Colors.grey.shade50
+                    : null,
                 child: ListTile(
+                  onLongPress: () => setState(() => _selectedMovement = mov),
                   leading: CircleAvatar(
                     backgroundColor: isEntrada
                         ? Colors.green.shade100
@@ -663,7 +704,12 @@ class _MovementsPageState extends State<MovementsPage> {
                   ),
                   title: Text(
                     mov.produtoNome ?? 'Produto Desconhecido',
-                    style: const TextStyle(fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: _selectedMovement?.id == mov.id
+                          ? Colors.black
+                          : null,
+                    ),
                   ),
                   subtitle: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -672,6 +718,11 @@ class _MovementsPageState extends State<MovementsPage> {
                         fit: BoxFit.scaleDown,
                         child: Text(
                           'Ent: ${_dateTimeFormat.format(dataE).split(' ')[0]}',
+                          style: TextStyle(
+                            color: _selectedMovement?.id == mov.id
+                                ? Colors.black
+                                : null,
+                          ),
                         ),
                       ),
                       if (dataS != null)
@@ -685,33 +736,24 @@ class _MovementsPageState extends State<MovementsPage> {
                         Text('Obs: ${mov.observacao}'),
                     ],
                   ),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      FittedBox(
-                        fit: BoxFit.scaleDown,
-                        child: Text(
-                          '${isEntrada ? "+" : "-"}${mov.quantidade} ${mov.unidadeMedida}',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 15,
-                            color: isEntrada ? Colors.green : Colors.red,
-                          ),
+                  trailing: _selectedMovement?.id == mov.id
+                      ? const Icon(Icons.check_circle, color: Colors.blue)
+                      : Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Text(
+                                '${isEntrada ? "+" : "-"}${mov.quantidade} ${mov.unidadeMedida}',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 15,
+                                  color: isEntrada ? Colors.green : Colors.red,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
-                      ),
-                      const SizedBox(width: 4),
-                      IconButton(
-                        icon: const Icon(Icons.edit, color: Colors.blue),
-                        tooltip: 'Editar',
-                        onPressed: () => _showAddDialog(mov),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.delete, color: Colors.red),
-                        tooltip: 'Excluir',
-                        onPressed: () => _confirmDelete(mov),
-                      ),
-                    ],
-                  ),
                 ),
               );
             },

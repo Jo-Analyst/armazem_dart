@@ -19,6 +19,7 @@ class _ProductsPageState extends State<ProductsPage> {
 
   int? _selectedCategoryId;
   bool _addingNewCategory = false;
+  ProductModel? _selectedProduct;
 
   @override
   void initState() {
@@ -303,7 +304,37 @@ class _ProductsPageState extends State<ProductsPage> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Produtos'), elevation: 2),
+      appBar: AppBar(
+        title: Text(
+          _selectedProduct != null ? 'Produto Selecionado' : 'Produtos',
+        ),
+        elevation: 2,
+        actions: _selectedProduct != null
+            ? [
+                IconButton(
+                  icon: const Icon(Icons.edit),
+                  tooltip: 'Editar',
+                  onPressed: () {
+                    _showAddEditDialog(_selectedProduct);
+                    setState(() => _selectedProduct = null);
+                  },
+                ),
+                IconButton(
+                  icon: const Icon(Icons.delete),
+                  tooltip: 'Excluir',
+                  onPressed: () {
+                    _confirmDelete(_selectedProduct!);
+                    setState(() => _selectedProduct = null);
+                  },
+                ),
+                IconButton(
+                  icon: const Icon(Icons.close),
+                  tooltip: 'Cancelar seleção',
+                  onPressed: () => setState(() => _selectedProduct = null),
+                ),
+              ]
+            : null,
+      ),
       body: Column(
         children: [
           Padding(
@@ -400,9 +431,20 @@ class _ProductsPageState extends State<ProductsPage> {
                     final saldoPositivo = prod.saldo > 0;
 
                     return Card(
+                      shape: _selectedProduct?.id == prod.id
+                          ? RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              side: BorderSide(color: Colors.grey),
+                            )
+                          : Border(bottom: BorderSide(color: Colors.grey)),
                       margin: const EdgeInsets.only(bottom: 10.0),
                       elevation: 1,
+                      color: _selectedProduct?.id == prod.id
+                          ? Colors.grey.shade50
+                          : null,
                       child: ListTile(
+                        onLongPress: () =>
+                            setState(() => _selectedProduct = prod),
                         leading: CircleAvatar(
                           backgroundColor: saldoPositivo
                               ? theme.colorScheme.primaryContainer
@@ -416,58 +458,58 @@ class _ProductsPageState extends State<ProductsPage> {
                         ),
                         title: Text(
                           prod.nome,
-                          style: const TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                        subtitle: FittedBox(
-                          fit: BoxFit.scaleDown,
-                          child: Text(
-                            'Categoria: ${prod.categoriaNome ?? "Sem categoria"}',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: _selectedProduct?.id == prod.id
+                                ? Colors.black
+                                : null,
                           ),
                         ),
-                        trailing: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            // Chip de saldo calculado
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 10,
-                                vertical: 5,
-                              ),
-                              decoration: BoxDecoration(
-                                color: saldoPositivo
-                                    ? Colors.green.shade100
-                                    : Colors.orange.shade100,
-                                borderRadius: BorderRadius.circular(20),
-                                border: Border.all(
-                                  color: saldoPositivo
-                                      ? Colors.green.shade300
-                                      : Colors.orange.shade300,
-                                ),
-                              ),
-                              child: Text(
-                                saldoPositivo
-                                    ? prod.saldoFormatado
-                                    : 'Sem estoque',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 13,
-                                  color: saldoPositivo
-                                      ? Colors.green.shade800
-                                      : Colors.orange.shade800,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 4),
-                            IconButton(
-                              icon: const Icon(Icons.edit, color: Colors.blue),
-                              onPressed: () => _showAddEditDialog(prod),
-                            ),
-                            IconButton(
-                              icon: const Icon(Icons.delete, color: Colors.red),
-                              onPressed: () => _confirmDelete(prod),
-                            ),
-                          ],
+                        subtitle: Text(
+                          'Categoria: ${prod.categoriaNome ?? "Sem categoria"}',
+                          style: TextStyle(
+                            color: _selectedProduct?.id == prod.id
+                                ? Colors.black
+                                : null,
+                          ),
                         ),
+                        trailing: _selectedProduct?.id == prod.id
+                            ? const Icon(Icons.check_circle, color: Colors.blue)
+                            : Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  // Chip de saldo calculado
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 10,
+                                      vertical: 5,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: saldoPositivo
+                                          ? Colors.green.shade100
+                                          : Colors.orange.shade100,
+                                      borderRadius: BorderRadius.circular(20),
+                                      border: Border.all(
+                                        color: saldoPositivo
+                                            ? Colors.green.shade300
+                                            : Colors.orange.shade300,
+                                      ),
+                                    ),
+                                    child: Text(
+                                      saldoPositivo
+                                          ? prod.saldoFormatado
+                                          : 'Sem estoque',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 13,
+                                        color: saldoPositivo
+                                            ? Colors.green.shade800
+                                            : Colors.orange.shade800,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
                       ),
                     );
                   },

@@ -15,6 +15,7 @@ class _CategoriesPageState extends State<CategoriesPage> {
   final _controller = locator<CategoryController>();
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
+  CategoryModel? _selectedCategory;
 
   @override
   void initState() {
@@ -159,7 +160,37 @@ class _CategoriesPageState extends State<CategoriesPage> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Categorias'), elevation: 2),
+      appBar: AppBar(
+        title: Text(
+          _selectedCategory != null ? 'Categoria Selecionada' : 'Categorias',
+        ),
+        elevation: 2,
+        actions: _selectedCategory != null
+            ? [
+                IconButton(
+                  icon: const Icon(Icons.edit),
+                  tooltip: 'Editar',
+                  onPressed: () {
+                    _showAddEditDialog(_selectedCategory);
+                    setState(() => _selectedCategory = null);
+                  },
+                ),
+                IconButton(
+                  icon: const Icon(Icons.delete),
+                  tooltip: 'Excluir',
+                  onPressed: () {
+                    _confirmDelete(_selectedCategory!);
+                    setState(() => _selectedCategory = null);
+                  },
+                ),
+                IconButton(
+                  icon: const Icon(Icons.close),
+                  tooltip: 'Cancelar seleção',
+                  onPressed: () => setState(() => _selectedCategory = null),
+                ),
+              ]
+            : null,
+      ),
       body: SignalBuilder(
         builder: (context) {
           if (_controller.isLoading.value) {
@@ -200,31 +231,35 @@ class _CategoriesPageState extends State<CategoriesPage> {
           }
 
           return ListView.builder(
+            // separatorBuilder: (context, index) => const Divider(),
             padding: const EdgeInsets.all(16.0),
             itemCount: categoriesList.length,
             itemBuilder: (context, index) {
               final cat = categoriesList[index];
               return Card(
+                shape: _selectedCategory?.id == cat.id
+                    ? RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        side: const BorderSide(color: Colors.grey),
+                      )
+                    : const Border(bottom: BorderSide(color: Colors.grey)),
                 margin: const EdgeInsets.only(bottom: 12.0),
                 elevation: 1,
+                color: _selectedCategory?.id == cat.id
+                    ? Colors.grey.shade50
+                    : null,
                 child: ListTile(
+                  onLongPress: () => setState(() => _selectedCategory = cat),
                   title: Text(
                     cat.nome,
-                    style: const TextStyle(fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: _selectedCategory?.id == cat.id ? Colors.black : null,
+                    ),
                   ),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.edit, color: Colors.blue),
-                        onPressed: () => _showAddEditDialog(cat),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.delete, color: Colors.red),
-                        onPressed: () => _confirmDelete(cat),
-                      ),
-                    ],
-                  ),
+                  trailing: _selectedCategory?.id == cat.id
+                      ? const Icon(Icons.check_circle, color: Colors.blue)
+                      : null,
                 ),
               );
             },
