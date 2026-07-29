@@ -37,7 +37,8 @@ class _ProductsPageState extends State<ProductsPage> {
 
   void _showAddEditDialog([ProductModel? product]) {
     _nameController.text = product?.nome ?? '';
-    _selectedCategoryId = product?.categoriaId ??
+    _selectedCategoryId =
+        product?.categoriaId ??
         (_controller.categories.value.isNotEmpty
             ? _controller.categories.value.first.id
             : null);
@@ -82,12 +83,14 @@ class _ProductsPageState extends State<ProductsPage> {
                             children: [
                               Expanded(
                                 child: DropdownButtonFormField<int>(
-                                  value: _selectedCategoryId,
+                                  initialValue: _selectedCategoryId,
                                   decoration: const InputDecoration(
                                     labelText: 'Categoria *',
                                     border: OutlineInputBorder(),
                                   ),
-                                  items: _controller.categories.value.map((cat) {
+                                  items: _controller.categories.value.map((
+                                    cat,
+                                  ) {
                                     return DropdownMenuItem<int>(
                                       value: cat.id,
                                       child: Text(cat.nome),
@@ -222,11 +225,13 @@ class _ProductsPageState extends State<ProductsPage> {
                           categoriaId: _selectedCategoryId!,
                         );
                       } else {
-                        await _controller.editProduct(ProductModel(
-                          id: product.id,
-                          nome: _nameController.text.trim(),
-                          categoriaId: _selectedCategoryId!,
-                        ));
+                        await _controller.editProduct(
+                          ProductModel(
+                            id: product.id,
+                            nome: _nameController.text.trim(),
+                            categoriaId: _selectedCategoryId!,
+                          ),
+                        );
                       }
                       if (!mounted) return;
                       Navigator.pop(dialogContext);
@@ -298,10 +303,7 @@ class _ProductsPageState extends State<ProductsPage> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Produtos'),
-        elevation: 2,
-      ),
+      appBar: AppBar(title: const Text('Produtos'), elevation: 2),
       body: Column(
         children: [
           Padding(
@@ -325,7 +327,7 @@ class _ProductsPageState extends State<ProductsPage> {
                   child: SignalBuilder(
                     builder: (context) {
                       return DropdownButtonFormField<int?>(
-                        value: _controller.categoryFilter.value,
+                        initialValue: _controller.categoryFilter.value,
                         decoration: const InputDecoration(
                           labelText: 'Categoria',
                           border: OutlineInputBorder(),
@@ -373,13 +375,17 @@ class _ProductsPageState extends State<ProductsPage> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.inventory_2_outlined,
-                            size: 64, color: theme.hintColor),
+                        Icon(
+                          Icons.inventory_2_outlined,
+                          size: 64,
+                          color: theme.hintColor,
+                        ),
                         const SizedBox(height: 16),
                         Text(
                           'Nenhum produto cadastrado.',
-                          style: theme.textTheme.titleMedium
-                              ?.copyWith(color: theme.hintColor),
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            color: theme.hintColor,
+                          ),
                         ),
                       ],
                     ),
@@ -412,8 +418,12 @@ class _ProductsPageState extends State<ProductsPage> {
                           prod.nome,
                           style: const TextStyle(fontWeight: FontWeight.bold),
                         ),
-                        subtitle: Text(
-                            'Categoria: ${prod.categoriaNome ?? "Sem categoria"}'),
+                        subtitle: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            'Categoria: ${prod.categoriaNome ?? "Sem categoria"}',
+                          ),
+                        ),
                         trailing: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
@@ -453,8 +463,7 @@ class _ProductsPageState extends State<ProductsPage> {
                               onPressed: () => _showAddEditDialog(prod),
                             ),
                             IconButton(
-                              icon:
-                                  const Icon(Icons.delete, color: Colors.red),
+                              icon: const Icon(Icons.delete, color: Colors.red),
                               onPressed: () => _confirmDelete(prod),
                             ),
                           ],

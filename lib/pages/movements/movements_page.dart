@@ -65,16 +65,25 @@ class _MovementsPageState extends State<MovementsPage> {
     );
   }
 
-  void _showAddDialog() {
-    _quantityController.clear();
-    _obsController.clear();
-    _selectedType = 'ENTRADA';
-    _selectedUnit = UnidadeMedida.un.label;
-    _dataEntrada = DateTime.now();
-    _dataSaida = null;
-    _selectedProduct = _controller.products.value.isNotEmpty
-        ? _controller.products.value.first
-        : null;
+  void _showAddDialog([MovementModel? movement]) {
+    final isEditing = movement != null;
+    _quantityController.text = isEditing ? movement.quantidade.toString() : '';
+    _obsController.text = isEditing ? (movement.observacao ?? '') : '';
+    _selectedType = isEditing ? movement.tipo : 'ENTRADA';
+    _selectedUnit = isEditing ? movement.unidadeMedida : UnidadeMedida.un.label;
+    _dataEntrada = isEditing
+        ? (movement.dataEntrada.isNotEmpty
+              ? DateTime.tryParse(movement.dataEntrada)
+              : null)
+        : DateTime.now();
+    _dataSaida = isEditing ? DateTime.tryParse(movement.dataSaida ?? '') : null;
+    _selectedProduct = isEditing
+        ? _controller.products.value
+              .where((p) => p.id == movement.produtoId)
+              .firstOrNull
+        : (_controller.products.value.isNotEmpty
+              ? _controller.products.value.first
+              : null);
     _saldoAtual = _selectedProduct?.saldo ?? 0.0;
 
     showDialog(
@@ -87,7 +96,9 @@ class _MovementsPageState extends State<MovementsPage> {
             final saldoZerado = isSaida && _saldoAtual <= 0;
 
             return AlertDialog(
-              title: const Text('Nova Movimentação'),
+              title: Text(
+                isEditing ? 'Editar Movimentação' : 'Nova Movimentação',
+              ),
               content: SizedBox(
                 width: 480,
                 child: SingleChildScrollView(
@@ -457,24 +468,47 @@ class _MovementsPageState extends State<MovementsPage> {
                           try {
                             final qty = double.parse(_quantityController.text);
 
-                            await _controller.registerMovement(
-                              produtoId: _selectedProduct!.id!,
-                              tipo: _selectedType,
-                              quantidade: qty,
-                              unidadeMedida: _selectedUnit,
-                              dataEntrada: dataEntradaParaSalvar,
-                              dataSaida: _selectedType == 'ENTRADA'
-                                  ? null
-                                  : _dataSaida!.toIso8601String(),
-                              observacao: _obsController.text.trim().isEmpty
-                                  ? null
-                                  : _obsController.text.trim(),
-                            );
+                            if (isEditing) {
+                              await _controller.updateMovement(
+                                MovementModel(
+                                  id: movement.id,
+                                  produtoId: _selectedProduct!.id!,
+                                  tipo: _selectedType,
+                                  quantidade: qty,
+                                  unidadeMedida: _selectedUnit,
+                                  dataEntrada: dataEntradaParaSalvar,
+                                  dataSaida: _selectedType == 'ENTRADA'
+                                      ? null
+                                      : _dataSaida!.toIso8601String(),
+                                  observacao: _obsController.text.trim().isEmpty
+                                      ? null
+                                      : _obsController.text.trim(),
+                                ),
+                              );
+                            } else {
+                              await _controller.registerMovement(
+                                produtoId: _selectedProduct!.id!,
+                                tipo: _selectedType,
+                                quantidade: qty,
+                                unidadeMedida: _selectedUnit,
+                                dataEntrada: dataEntradaParaSalvar,
+                                dataSaida: _selectedType == 'ENTRADA'
+                                    ? null
+                                    : _dataSaida!.toIso8601String(),
+                                observacao: _obsController.text.trim().isEmpty
+                                    ? null
+                                    : _obsController.text.trim(),
+                              );
+                            }
                             if (!mounted) return;
                             navigator.pop();
                             messenger.showSnackBar(
-                              const SnackBar(
-                                content: Text('Movimentação registrada!'),
+                              SnackBar(
+                                content: Text(
+                                  isEditing
+                                      ? 'Movimentação atualizada!'
+                                      : 'Movimentação registrada!',
+                                ),
                                 backgroundColor: Colors.green,
                               ),
                             );
@@ -490,11 +524,63 @@ class _MovementsPageState extends State<MovementsPage> {
                             );
                           }
                         },
-                  child: const Text('Confirmar'),
+                  child: Text(isEditing ? 'Salvar' : 'Confirmar'),
                 ),
               ],
             );
           },
+        );
+      },
+    );
+  }
+
+  void _confirmDelete(MovementModel movement) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Excluir Movimentação'),
+          content: Text(
+            'Deseja excluir a movimentação de '
+            '${movement.isEntrada ? 'ENTRADA' : 'SAÍDA'} de '
+            '${movement.quantidade} ${movement.unidadeMedida} '
+            'do produto "${movement.produtoNome ?? 'Desconhecido'}"?\n\n'
+            'O saldo do produto será recalculado automaticamente.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancelar'),
+            ),
+            FilledButton(
+              style: FilledButton.styleFrom(backgroundColor: Colors.red),
+              onPressed: () async {
+                try {
+                  await _controller.deleteMovement(movement.id!);
+                  if (!mounted) return;
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Movimentação excluída.'),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+                } catch (e) {
+                  if (!mounted) return;
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        e.toString().replaceFirst('Exception: ', ''),
+                      ),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              },
+              child: const Text('Excluir'),
+            ),
+          ],
         );
       },
     );
@@ -582,20 +668,49 @@ class _MovementsPageState extends State<MovementsPage> {
                   subtitle: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Entrada: ${_dateTimeFormat.format(dataE)}'),
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          'Ent: ${_dateTimeFormat.format(dataE).split(' ')[0]}',
+                        ),
+                      ),
                       if (dataS != null)
-                        Text('Saída: ${_dateTimeFormat.format(dataS)}'),
+                        FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            'Saída: ${_dateTimeFormat.format(dataS)}',
+                          ),
+                        ),
                       if (mov.observacao != null)
                         Text('Obs: ${mov.observacao}'),
                     ],
                   ),
-                  trailing: Text(
-                    '${isEntrada ? "+" : "-"}${mov.quantidade} ${mov.unidadeMedida}',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 15,
-                      color: isEntrada ? Colors.green : Colors.red,
-                    ),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          '${isEntrada ? "+" : "-"}${mov.quantidade} ${mov.unidadeMedida}',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 15,
+                            color: isEntrada ? Colors.green : Colors.red,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      IconButton(
+                        icon: const Icon(Icons.edit, color: Colors.blue),
+                        tooltip: 'Editar',
+                        onPressed: () => _showAddDialog(mov),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.delete, color: Colors.red),
+                        tooltip: 'Excluir',
+                        onPressed: () => _confirmDelete(mov),
+                      ),
+                    ],
                   ),
                 ),
               );

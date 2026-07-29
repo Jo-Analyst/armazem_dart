@@ -2,12 +2,11 @@
 enum UnidadeMedida {
   kg('KG'),
   un('UN'),
-  pct('PCT'),
-  mala('MALA'),
-  fardo('FARDO'),
+  pct('PC'),
+  mala('ML'),
+  fardo('FD'),
   cx('CX'),
-  lt('LT'),
-  outros('OUTROS');
+  lt('LT');
 
   final String label;
   const UnidadeMedida(this.label);
@@ -15,7 +14,7 @@ enum UnidadeMedida {
   static UnidadeMedida fromLabel(String label) {
     return UnidadeMedida.values.firstWhere(
       (e) => e.label == label.toUpperCase(),
-      orElse: () => UnidadeMedida.outros,
+      orElse: () => UnidadeMedida.un,
     );
   }
 }

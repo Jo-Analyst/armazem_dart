@@ -1,5 +1,5 @@
 import 'dart:io';
-import 'package:file_picker/file_picker.dart';
+import 'package:file_selector/file_selector.dart';
 import 'package:signals_flutter/signals_flutter.dart';
 import '../repositories/backup_repository.dart';
 import 'settings_controller.dart';
@@ -114,8 +114,7 @@ class BackupController {
   /// Abre um seletor de diretório para o usuário escolher o local do backup.
   Future<String?> selecionarDiretorioBackup() async {
     try {
-      final String? selectedDirectory = await FilePicker.platform
-          .getDirectoryPath(dialogTitle: 'Selecionar pasta de backup');
+      final String? selectedDirectory = await getDirectoryPath();
 
       if (selectedDirectory == null || selectedDirectory.trim().isEmpty) {
         return null;

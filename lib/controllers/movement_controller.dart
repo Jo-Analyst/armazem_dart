@@ -91,4 +91,58 @@ class MovementController {
       isLoading.value = false;
     }
   }
+
+  /// Atualiza uma movimentação existente com as mesmas validações de negócio.
+  /// Lança [Exception] em caso de violação de regras.
+  Future<void> updateMovement(MovementModel movement) async {
+    isLoading.value = true;
+    error.value = null;
+    try {
+      if (movement.id == null) {
+        throw Exception('ID da movimentação é obrigatório para atualização.');
+      }
+
+      // Validação prévia de saldo na UI (antes de chegar ao repositório)
+      if (movement.tipo == 'SAIDA') {
+        final saldo = await getSaldoProduto(movement.produtoId);
+        final movAtual = movements.value
+            .where((m) => m.id == movement.id)
+            .firstOrNull;
+        double saldoDisponivel = saldo;
+        if (movAtual != null && movAtual.tipo == 'SAIDA') {
+          saldoDisponivel += movAtual.quantidade;
+        }
+        if (saldoDisponivel <= 0) {
+          throw Exception(
+            'Saldo zerado. Registre uma nova ENTRADA antes de registrar saída.',
+          );
+        }
+      }
+
+      await _movementRepository.update(movement);
+      await loadMovements();
+      await loadProducts(); // Atualiza saldo exibido nos produtos
+    } catch (e) {
+      error.value = e.toString().replaceFirst('Exception: ', '');
+      rethrow;
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  /// Remove uma movimentação pelo ID.
+  Future<void> deleteMovement(int id) async {
+    isLoading.value = true;
+    error.value = null;
+    try {
+      await _movementRepository.delete(id);
+      await loadMovements();
+      await loadProducts(); // Atualiza saldo exibido nos produtos
+    } catch (e) {
+      error.value = e.toString().replaceFirst('Exception: ', '');
+      rethrow;
+    } finally {
+      isLoading.value = false;
+    }
+  }
 }

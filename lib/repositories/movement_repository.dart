@@ -140,6 +140,87 @@ class MovementRepository {
     return await db.delete('movimentacoes', where: 'id = ?', whereArgs: [id]);
   }
 
+  /// Atualiza uma movimentação existente aplicando as mesmas regras de negócio
+  /// do [createMovement]. O [movement] deve conter o `id` da movimentação a ser
+  /// alterada.
+  Future<int> update(MovementModel movement) async {
+    final db = await _dbHelper.database;
+
+    if (movement.id == null) {
+      throw Exception('ID da movimentação é obrigatório para atualização.');
+    }
+
+    if (movement.tipo == 'SAIDA') {
+      if (movement.dataSaida == null || movement.dataSaida!.isEmpty) {
+        throw Exception(
+          'A data de saída é obrigatória para movimentação de SAÍDA.',
+        );
+      }
+      if (movement.dataEntrada.isNotEmpty) {
+        final entrada = DateTime.parse(movement.dataEntrada);
+        final saida = DateTime.parse(movement.dataSaida!);
+        if (saida.isBefore(entrada)) {
+          throw Exception(
+            'A data de saída (${_formatDate(movement.dataSaida!)}) não pode ser '
+            'anterior à data de entrada (${_formatDate(movement.dataEntrada)}).',
+          );
+        }
+      }
+
+      // Validação de saldo: desconsidera a própria movimentação que está sendo
+      // editada, somando de volta a quantidade antiga caso seja SAIDA.
+      final saldo = await getSaldoProduto(movement.produtoId);
+      final movAtual = await _getById(movement.id!);
+      double saldoDisponivel = saldo;
+      if (movAtual != null && movAtual.tipo == 'SAIDA') {
+        saldoDisponivel += movAtual.quantidade;
+      }
+
+      if (saldoDisponivel <= 0) {
+        throw Exception(
+          'Saldo zerado. Não é possível registrar saída. '
+          'Registre uma nova entrada antes de continuar.',
+        );
+      }
+      if (movement.quantidade > saldoDisponivel) {
+        throw Exception(
+          'Quantidade de saída (${movement.quantidade}) '
+          'maior que o saldo disponível ($saldoDisponivel).',
+        );
+      }
+    } else if (movement.tipo == 'ENTRADA') {
+      if (movement.dataEntrada.isEmpty) {
+        throw Exception(
+          'A data de entrada é obrigatória para movimentação de ENTRADA.',
+        );
+      }
+    } else {
+      throw Exception('Tipo de movimentação inválido: ${movement.tipo}');
+    }
+
+    return await db.update(
+      'movimentacoes',
+      movement.toMap(),
+      where: 'id = ?',
+      whereArgs: [movement.id],
+    );
+  }
+
+  Future<MovementModel?> _getById(int id) async {
+    final db = await _dbHelper.database;
+    final List<Map<String, dynamic>> maps = await db.rawQuery(
+      '''
+      SELECT m.*, p.nome AS produto_nome
+      FROM movimentacoes m
+      INNER JOIN produtos p ON m.produto_id = p.id
+      WHERE m.id = ?
+    ''',
+      [id],
+    );
+    if (maps.isEmpty) return null;
+    return MovementModel.fromMap(maps.first);
+  }
+
   String _formatDate(String iso) {
     try {
       final dt = DateTime.parse(iso);
