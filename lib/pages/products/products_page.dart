@@ -57,7 +57,7 @@ class _ProductsPageState extends State<ProductsPage> {
                   const SnackBar(content: Text('Produto excluído.')),
                 );
               },
-              child: const Text('Excluir'),
+              child: Text('Excluir', style: TextStyle(color: Colors.white)),
             ),
           ],
         );

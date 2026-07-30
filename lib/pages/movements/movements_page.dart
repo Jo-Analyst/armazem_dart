@@ -76,7 +76,10 @@ class _MovementsPageState extends State<MovementsPage> {
                   );
                 }
               },
-              child: const Text('Excluir'),
+              child: const Text(
+                'Excluir',
+                style: TextStyle(color: Colors.white),
+              ),
             ),
           ],
         );

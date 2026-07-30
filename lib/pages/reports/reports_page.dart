@@ -58,7 +58,7 @@ class _ReportsPageState extends State<ReportsPage> {
           crossAxisAlignment: pw.CrossAxisAlignment.start,
           children: [
             pw.Text(
-              'Relatório de Movimentações — Almoxarifado',
+              'Relatório de Movimentações - Almoxarifado',
               style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold),
             ),
             pw.SizedBox(height: 4),

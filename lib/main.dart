@@ -48,7 +48,7 @@ class MyApp extends StatelessWidget {
           },
         ),
       ),
-      themeMode: ThemeMode.system,
+      themeMode: ThemeMode.dark,
       initialRoute: AppRoutes.home,
       routes: AppRoutes.routes,
       onGenerateRoute: AppRoutes.onGenerateRoute,
