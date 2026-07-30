@@ -160,7 +160,7 @@ class _ProductFormPageState extends State<ProductFormPage> {
                       child: SignalBuilder(
                         builder: (context) {
                           return DropdownButtonFormField<int>(
-                            value: _selectedCategoryId,
+                            initialValue: _selectedCategoryId,
                             decoration: const InputDecoration(
                               labelText: 'Categoria *',
                               border: OutlineInputBorder(),

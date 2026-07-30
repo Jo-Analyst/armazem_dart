@@ -192,7 +192,7 @@ class _MovementFormPageState extends State<MovementFormPage> {
                   final productList = _controller.products.value;
 
                   return DropdownButtonFormField<int>(
-                    value: _selectedProduct?.id,
+                    initialValue: _selectedProduct?.id,
                     decoration: const InputDecoration(
                       labelText: 'Produto *',
                       border: OutlineInputBorder(),
@@ -269,7 +269,7 @@ class _MovementFormPageState extends State<MovementFormPage> {
 
               // Tipo de Movimentação
               DropdownButtonFormField<String>(
-                value: _selectedType,
+                initialValue: _selectedType,
                 decoration: const InputDecoration(
                   labelText: 'Tipo *',
                   border: OutlineInputBorder(),
@@ -364,7 +364,7 @@ class _MovementFormPageState extends State<MovementFormPage> {
                   Expanded(
                     flex: 3,
                     child: DropdownButtonFormField<String>(
-                      value: _selectedUnit,
+                      initialValue: _selectedUnit,
                       decoration: const InputDecoration(
                         labelText: 'Unidade *',
                         border: OutlineInputBorder(),
