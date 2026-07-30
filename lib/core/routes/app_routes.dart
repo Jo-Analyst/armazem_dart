@@ -1,8 +1,12 @@
+import 'package:armazem/models/movement_model.dart';
+import 'package:armazem/models/product_model.dart';
 import 'package:flutter/material.dart';
 import '../../pages/backup/backup_page.dart';
 import '../../pages/categories/categories_page.dart';
 import '../../pages/home_page.dart';
+import '../../pages/movements/movement_form_page.dart';
 import '../../pages/movements/movements_page.dart';
+import '../../pages/products/product_form_page.dart';
 import '../../pages/products/products_page.dart';
 import '../../pages/reports/reports_page.dart';
 import '../../pages/settings/settings_page.dart';
@@ -10,8 +14,10 @@ import '../../pages/settings/settings_page.dart';
 class AppRoutes {
   static const home = '/';
   static const products = '/products';
+  static const productForm = '/product-form';
   static const categories = '/categories';
   static const movements = '/movements';
+  static const movementForm = '/movement-form';
   static const reports = '/reports';
   static const backup = '/backup';
   static const settings = '/settings';
@@ -30,6 +36,21 @@ class AppRoutes {
     final builder = routes[settings.name];
     if (builder != null) {
       return _buildRoute<T>(settings, builder);
+    }
+
+    // Rota especial para formulário de produto com parâmetro
+    if (settings.name == productForm) {
+      final product = settings.arguments as ProductModel?;
+      return _buildRoute<T>(settings, (_) => ProductFormPage(product: product));
+    }
+
+    // Rota especial para formulário de movimentação com parâmetro
+    if (settings.name == movementForm) {
+      final movement = settings.arguments as MovementModel?;
+      return _buildRoute<T>(
+        settings,
+        (_) => MovementFormPage(movement: movement),
+      );
     }
 
     return _buildRoute<T>(settings, (_) => const HomePage());

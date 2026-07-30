@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:signals_flutter/signals_flutter.dart';
 import '../../core/locator/locator.dart';
+import '../../core/routes/app_routes.dart';
 import '../../controllers/product_controller.dart';
 import '../../models/product_model.dart';
 
@@ -13,12 +14,6 @@ class ProductsPage extends StatefulWidget {
 
 class _ProductsPageState extends State<ProductsPage> {
   final _controller = locator<ProductController>();
-  final _formKey = GlobalKey<FormState>();
-  final _nameController = TextEditingController();
-  final _newCategoryController = TextEditingController();
-
-  int? _selectedCategoryId;
-  bool _addingNewCategory = false;
   ProductModel? _selectedProduct;
 
   @override
@@ -27,243 +22,6 @@ class _ProductsPageState extends State<ProductsPage> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _controller.init();
     });
-  }
-
-  @override
-  void dispose() {
-    _nameController.dispose();
-    _newCategoryController.dispose();
-    super.dispose();
-  }
-
-  void _showAddEditDialog([ProductModel? product]) {
-    _nameController.text = product?.nome ?? '';
-    _selectedCategoryId =
-        product?.categoriaId ??
-        (_controller.categories.value.isNotEmpty
-            ? _controller.categories.value.first.id
-            : null);
-    _addingNewCategory = false;
-    _newCategoryController.clear();
-
-    showDialog(
-      context: context,
-      builder: (context) {
-        return StatefulBuilder(
-          builder: (dialogContext, setDialogState) {
-            return AlertDialog(
-              title: Text(product == null ? 'Novo Produto' : 'Editar Produto'),
-              content: SizedBox(
-                width: 420,
-                child: SingleChildScrollView(
-                  child: Form(
-                    key: _formKey,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Nome do Produto
-                        TextFormField(
-                          controller: _nameController,
-                          decoration: const InputDecoration(
-                            labelText: 'Nome do Produto *',
-                            border: OutlineInputBorder(),
-                          ),
-                          validator: (val) {
-                            if (val == null || val.trim().isEmpty) {
-                              return 'Por favor, insira o nome';
-                            }
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: 16),
-
-                        // Categoria — Selecionar existente ou criar nova
-                        if (!_addingNewCategory) ...[
-                          Row(
-                            children: [
-                              Expanded(
-                                child: DropdownButtonFormField<int>(
-                                  initialValue: _selectedCategoryId,
-                                  decoration: const InputDecoration(
-                                    labelText: 'Categoria *',
-                                    border: OutlineInputBorder(),
-                                  ),
-                                  items: _controller.categories.value.map((
-                                    cat,
-                                  ) {
-                                    return DropdownMenuItem<int>(
-                                      value: cat.id,
-                                      child: Text(cat.nome),
-                                    );
-                                  }).toList(),
-                                  onChanged: (val) {
-                                    setDialogState(() {
-                                      _selectedCategoryId = val;
-                                    });
-                                  },
-                                  validator: (val) {
-                                    if (val == null && !_addingNewCategory) {
-                                      return 'Selecione uma categoria';
-                                    }
-                                    return null;
-                                  },
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              IconButton.filled(
-                                onPressed: () {
-                                  setDialogState(() {
-                                    _addingNewCategory = true;
-                                    _selectedCategoryId = null;
-                                  });
-                                },
-                                icon: const Icon(Icons.add),
-                                tooltip: 'Criar nova categoria',
-                              ),
-                            ],
-                          ),
-                        ] else ...[
-                          Row(
-                            children: [
-                              Expanded(
-                                child: TextFormField(
-                                  controller: _newCategoryController,
-                                  autofocus: true,
-                                  decoration: const InputDecoration(
-                                    labelText: 'Nome da Nova Categoria *',
-                                    border: OutlineInputBorder(),
-                                    hintText: 'Ex: Laticínios',
-                                  ),
-                                  validator: (val) {
-                                    if (_addingNewCategory &&
-                                        (val == null || val.trim().isEmpty)) {
-                                      return 'Informe o nome da categoria';
-                                    }
-                                    return null;
-                                  },
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              IconButton(
-                                onPressed: () {
-                                  setDialogState(() {
-                                    _addingNewCategory = false;
-                                    _newCategoryController.clear();
-                                  });
-                                },
-                                icon: const Icon(Icons.close),
-                                tooltip: 'Cancelar nova categoria',
-                              ),
-                            ],
-                          ),
-                        ],
-
-                        const SizedBox(height: 12),
-                        Container(
-                          padding: const EdgeInsets.all(10),
-                          decoration: BoxDecoration(
-                            color: Theme.of(context)
-                                .colorScheme
-                                .primaryContainer
-                                .withValues(alpha: 0.3),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Row(
-                            children: [
-                              Icon(
-                                Icons.info_outline,
-                                size: 16,
-                                color: Theme.of(context).colorScheme.primary,
-                              ),
-                              const SizedBox(width: 6),
-                              const Expanded(
-                                child: Text(
-                                  'O saldo do produto é calculado automaticamente pelas movimentações de entrada e saída.',
-                                  style: TextStyle(fontSize: 12),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(dialogContext),
-                  child: const Text('Cancelar'),
-                ),
-                FilledButton(
-                  onPressed: () async {
-                    if (!_formKey.currentState!.validate()) return;
-
-                    try {
-                      // Criar nova categoria se necessário
-                      if (_addingNewCategory &&
-                          _newCategoryController.text.trim().isNotEmpty) {
-                        final newCat = await _controller.addCategoryIfNeeded(
-                          _newCategoryController.text.trim(),
-                        );
-                        _selectedCategoryId = newCat.id;
-                      }
-
-                      if (_selectedCategoryId == null) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Selecione ou crie uma categoria.'),
-                            backgroundColor: Colors.orange,
-                          ),
-                        );
-                        return;
-                      }
-
-                      if (product == null) {
-                        await _controller.addProduct(
-                          nome: _nameController.text.trim(),
-                          categoriaId: _selectedCategoryId!,
-                        );
-                      } else {
-                        await _controller.editProduct(
-                          ProductModel(
-                            id: product.id,
-                            nome: _nameController.text.trim(),
-                            categoriaId: _selectedCategoryId!,
-                          ),
-                        );
-                      }
-                      if (!mounted) return;
-                      Navigator.pop(dialogContext);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            product == null
-                                ? 'Produto adicionado!'
-                                : 'Produto atualizado!',
-                          ),
-                          backgroundColor: Colors.green,
-                        ),
-                      );
-                    } catch (e) {
-                      if (!mounted) return;
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(e.toString()),
-                          backgroundColor: Colors.red,
-                        ),
-                      );
-                    }
-                  },
-                  child: const Text('Salvar'),
-                ),
-              ],
-            );
-          },
-        );
-      },
-    );
   }
 
   void _confirmDelete(ProductModel product) {
@@ -315,8 +73,15 @@ class _ProductsPageState extends State<ProductsPage> {
                 IconButton(
                   icon: const Icon(Icons.edit),
                   tooltip: 'Editar',
-                  onPressed: () {
-                    _showAddEditDialog(_selectedProduct);
+                  onPressed: () async {
+                    final result = await Navigator.pushNamed(
+                      context,
+                      AppRoutes.productForm,
+                      arguments: _selectedProduct,
+                    );
+                    if (result == true) {
+                      _controller.init();
+                    }
                     setState(() => _selectedProduct = null);
                   },
                 ),
@@ -521,7 +286,15 @@ class _ProductsPageState extends State<ProductsPage> {
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: _showAddEditDialog,
+        onPressed: () async {
+          final result = await Navigator.pushNamed(
+            context,
+            AppRoutes.productForm,
+          );
+          if (result == true) {
+            _controller.init();
+          }
+        },
         icon: const Icon(Icons.add),
         label: const Text('Novo Produto'),
       ),
