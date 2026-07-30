@@ -4,6 +4,7 @@ import '../../core/locator/locator.dart';
 import '../../core/routes/app_routes.dart';
 import '../../controllers/product_controller.dart';
 import '../../models/product_model.dart';
+import 'widgets/product_item_card.dart';
 
 class ProductsPage extends StatefulWidget {
   const ProductsPage({super.key});
@@ -14,6 +15,7 @@ class ProductsPage extends StatefulWidget {
 
 class _ProductsPageState extends State<ProductsPage> {
   final _controller = locator<ProductController>();
+  final _searchController = TextEditingController();
   ProductModel? _selectedProduct;
 
   @override
@@ -22,6 +24,12 @@ class _ProductsPageState extends State<ProductsPage> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _controller.init();
     });
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
   void _confirmDelete(ProductModel product) {
@@ -103,19 +111,37 @@ class _ProductsPageState extends State<ProductsPage> {
       ),
       body: Column(
         children: [
+          // Barra de busca e filtros
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: Row(
               children: [
                 Expanded(
                   flex: 3,
-                  child: TextField(
-                    decoration: const InputDecoration(
-                      hintText: 'Buscar por nome...',
-                      prefixIcon: Icon(Icons.search),
-                      border: OutlineInputBorder(),
-                    ),
-                    onChanged: _controller.updateSearch,
+                  child: ValueListenableBuilder<TextEditingValue>(
+                    valueListenable: _searchController,
+                    builder: (context, value, child) {
+                      final hasText = value.text.isNotEmpty;
+
+                      return TextField(
+                        controller: _searchController,
+                        decoration: InputDecoration(
+                          hintText: 'Buscar por nome...',
+                          border: const OutlineInputBorder(),
+                          suffixIcon: hasText
+                              ? IconButton(
+                                  icon: const Icon(Icons.clear),
+                                  tooltip: 'Limpar busca',
+                                  onPressed: () {
+                                    _searchController.clear();
+                                    _controller.updateSearch('');
+                                  },
+                                )
+                              : const Icon(Icons.search),
+                        ),
+                        onChanged: _controller.updateSearch,
+                      );
+                    },
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -124,7 +150,7 @@ class _ProductsPageState extends State<ProductsPage> {
                   child: SignalBuilder(
                     builder: (context) {
                       return DropdownButtonFormField<int?>(
-                        initialValue: _controller.categoryFilter.value,
+                        value: _controller.categoryFilter.value,
                         decoration: const InputDecoration(
                           labelText: 'Categoria',
                           border: OutlineInputBorder(),
@@ -149,6 +175,8 @@ class _ProductsPageState extends State<ProductsPage> {
               ],
             ),
           ),
+
+          // Lista de Produtos / Estados da UI
           Expanded(
             child: SignalBuilder(
               builder: (context) {
@@ -194,89 +222,14 @@ class _ProductsPageState extends State<ProductsPage> {
                   itemCount: list.length,
                   itemBuilder: (context, index) {
                     final prod = list[index];
-                    final saldoPositivo = prod.saldo > 0;
+                    final isSelected = _selectedProduct?.id == prod.id;
 
-                    return Card(
-                      shape: _selectedProduct?.id == prod.id
-                          ? RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              side: BorderSide(color: Colors.grey),
-                            )
-                          : Border(bottom: BorderSide(color: Colors.grey)),
-                      margin: const EdgeInsets.only(bottom: 10.0),
-                      elevation: 1,
-                      color: _selectedProduct?.id == prod.id
-                          ? Colors.grey.shade50
-                          : null,
-                      child: ListTile(
-                        onLongPress: () =>
-                            setState(() => _selectedProduct = prod),
-                        leading: CircleAvatar(
-                          backgroundColor: saldoPositivo
-                              ? theme.colorScheme.primaryContainer
-                              : Colors.orange.shade100,
-                          child: Icon(
-                            Icons.inventory_2,
-                            color: saldoPositivo
-                                ? theme.colorScheme.onPrimaryContainer
-                                : Colors.orange.shade800,
-                          ),
-                        ),
-                        title: Text(
-                          prod.nome,
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: _selectedProduct?.id == prod.id
-                                ? Colors.black
-                                : null,
-                          ),
-                        ),
-                        subtitle: Text(
-                          'Categoria: ${prod.categoriaNome ?? "Sem categoria"}',
-                          style: TextStyle(
-                            color: _selectedProduct?.id == prod.id
-                                ? Colors.black
-                                : null,
-                          ),
-                        ),
-                        trailing: _selectedProduct?.id == prod.id
-                            ? const Icon(Icons.check_circle, color: Colors.blue)
-                            : Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  // Chip de saldo calculado
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 10,
-                                      vertical: 5,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: saldoPositivo
-                                          ? Colors.green.shade100
-                                          : Colors.orange.shade100,
-                                      borderRadius: BorderRadius.circular(20),
-                                      border: Border.all(
-                                        color: saldoPositivo
-                                            ? Colors.green.shade300
-                                            : Colors.orange.shade300,
-                                      ),
-                                    ),
-                                    child: Text(
-                                      saldoPositivo
-                                          ? prod.saldoFormatado
-                                          : 'Sem estoque',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 13,
-                                        color: saldoPositivo
-                                            ? Colors.green.shade800
-                                            : Colors.orange.shade800,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                      ),
+                    return ProductItemCard(
+                      product: prod,
+                      isSelected: isSelected,
+                      onLongPress: () {
+                        setState(() => _selectedProduct = prod);
+                      },
                     );
                   },
                 );

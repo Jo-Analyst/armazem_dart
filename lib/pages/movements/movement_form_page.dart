@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:signals_flutter/signals_flutter.dart';
 import '../../core/locator/locator.dart';
@@ -36,8 +37,15 @@ class _MovementFormPageState extends State<MovementFormPage> {
     super.initState();
     final isEditing = widget.movement != null;
 
+    // Listener para re-renderizar ao digitar na quantidade (controla a visibilidade do ícone de limpar)
+    _quantityController.addListener(() {
+      if (mounted) setState(() {});
+    });
+
     if (isEditing) {
-      _quantityController.text = widget.movement!.quantidade.toString();
+      _quantityController.text = widget.movement!.quantidade
+          .toString()
+          .replaceAll('.', ',');
       _obsController.text = widget.movement!.observacao ?? '';
       _selectedType = widget.movement!.tipo;
       _selectedUnit = widget.movement!.unidadeMedida;
@@ -51,20 +59,27 @@ class _MovementFormPageState extends State<MovementFormPage> {
       await _controller.init();
 
       if (isEditing) {
+        final prod = _controller.products.value
+            .where((p) => p.id == widget.movement!.produtoId)
+            .firstOrNull;
+
+        if (prod != null) {
+          await _atualizarSaldo(prod);
+        }
+
         setState(() {
-          _selectedProduct = _controller.products.value
-              .where((p) => p.id == widget.movement!.produtoId)
-              .firstOrNull;
-          _saldoAtual = _selectedProduct?.saldo ?? 0.0;
+          _selectedProduct = prod;
         });
       } else {
         setState(() {
           _selectedProduct = _controller.products.value.isNotEmpty
               ? _controller.products.value.first
               : null;
-          _saldoAtual = _selectedProduct?.saldo ?? 0.0;
           _dataEntrada = DateTime.now();
         });
+        if (_selectedProduct != null) {
+          await _atualizarSaldo(_selectedProduct);
+        }
       }
     });
   }
@@ -81,7 +96,10 @@ class _MovementFormPageState extends State<MovementFormPage> {
       _saldoAtual = 0.0;
       return;
     }
-    _saldoAtual = await _controller.getSaldoProduto(produto.id!);
+    final saldo = await _controller.getSaldoProduto(produto.id!);
+    setState(() {
+      _saldoAtual = saldo;
+    });
   }
 
   Future<DateTime?> _pickDate(
@@ -107,7 +125,9 @@ class _MovementFormPageState extends State<MovementFormPage> {
         await _controller.registerMovement(
           produtoId: _selectedProduct!.id!,
           tipo: _selectedType,
-          quantidade: double.parse(_quantityController.text.trim()),
+          quantidade: double.parse(
+            _quantityController.text.trim().replaceAll(',', '.'),
+          ),
           unidadeMedida: _selectedUnit,
           dataEntrada: _selectedType == 'ENTRADA'
               ? _dataEntrada!.toIso8601String()
@@ -125,7 +145,9 @@ class _MovementFormPageState extends State<MovementFormPage> {
             id: widget.movement!.id,
             produtoId: _selectedProduct!.id!,
             tipo: _selectedType,
-            quantidade: double.parse(_quantityController.text.trim()),
+            quantidade: double.parse(
+              _quantityController.text.trim().replaceAll(',', '.'),
+            ),
             unidadeMedida: _selectedUnit,
             dataEntrada: _selectedType == 'ENTRADA'
                 ? _dataEntrada!.toIso8601String()
@@ -191,30 +213,75 @@ class _MovementFormPageState extends State<MovementFormPage> {
                 builder: (context) {
                   final productList = _controller.products.value;
 
-                  return DropdownButtonFormField<int>(
-                    initialValue: _selectedProduct?.id,
-                    decoration: const InputDecoration(
-                      labelText: 'Produto *',
-                      border: OutlineInputBorder(),
+                  return Autocomplete<ProductModel>(
+                    key: ValueKey(_selectedProduct?.id ?? 'novo_produto'),
+                    initialValue: TextEditingValue(
+                      text: _selectedProduct?.nome ?? '',
                     ),
-                    items: productList.map((prod) {
-                      return DropdownMenuItem<int>(
-                        value: prod.id,
-                        child: Text(prod.nome),
-                      );
-                    }).toList(),
-                    onChanged: (val) async {
-                      final selectedProduct = productList.firstWhere(
-                        (p) => p.id == val,
-                        orElse: () => productList.first,
-                      );
-                      await _atualizarSaldo(selectedProduct);
-                      setState(() {
-                        _selectedProduct = selectedProduct;
+                    optionsBuilder: (TextEditingValue textEditingValue) {
+                      if (textEditingValue.text.isEmpty) {
+                        return productList;
+                      }
+                      return productList.where((ProductModel option) {
+                        return option.nome.toLowerCase().contains(
+                          textEditingValue.text.toLowerCase(),
+                        );
                       });
                     },
-                    validator: (val) =>
-                        val == null ? 'Selecione um produto' : null,
+                    displayStringForOption: (ProductModel option) =>
+                        option.nome,
+                    fieldViewBuilder:
+                        (
+                          context,
+                          textEditingController,
+                          focusNode,
+                          onFieldSubmitted,
+                        ) {
+                          if (textEditingController.text.isEmpty &&
+                              _selectedProduct != null) {
+                            textEditingController.text = _selectedProduct!.nome;
+                          }
+
+                          final hasValue =
+                              textEditingController.text.isNotEmpty ||
+                              _selectedProduct != null;
+
+                          return TextFormField(
+                            controller: textEditingController,
+                            focusNode: focusNode,
+                            decoration: InputDecoration(
+                              labelText: 'Produto *',
+                              border: const OutlineInputBorder(),
+                              suffixIcon: !hasValue
+                                  ? const Icon(Icons.search)
+                                  : IconButton(
+                                      icon: const Icon(Icons.clear),
+                                      onPressed: () {
+                                        textEditingController.clear();
+                                        focusNode.unfocus();
+                                        setState(() {
+                                          _selectedProduct = null;
+                                          _saldoAtual = 0.0;
+                                        });
+                                      },
+                                    ),
+                            ),
+                            validator: (val) {
+                              if (val == null ||
+                                  val.trim().isEmpty ||
+                                  _selectedProduct == null) {
+                                return 'Selecione um produto';
+                              }
+                              return null;
+                            },
+                          );
+                        },
+                    onSelected: (ProductModel selection) async {
+                      await _atualizarSaldo(selection);
+                      setState(() {
+                        _selectedProduct = selection;
+                      });
+                    },
                   );
                 },
               ),
@@ -341,17 +408,31 @@ class _MovementFormPageState extends State<MovementFormPage> {
                       keyboardType: const TextInputType.numberWithOptions(
                         decimal: true,
                       ),
-                      decoration: const InputDecoration(
+                      // Permite apenas números e um único separador decimal (. ou ,)
+                      inputFormatters: [
+                        FilteringTextInputFormatter.allow(
+                          RegExp(r'^\d*[.,]?\d*'),
+                        ),
+                      ],
+                      decoration: InputDecoration(
                         labelText: 'Quantidade *',
-                        border: OutlineInputBorder(),
+                        border: const OutlineInputBorder(),
+                        suffixIcon: _quantityController.text.isNotEmpty
+                            ? IconButton(
+                                icon: const Icon(Icons.clear),
+                                onPressed: () => _quantityController.clear(),
+                              )
+                            : null,
                       ),
                       validator: (val) {
                         if (val == null || val.trim().isEmpty) {
                           return 'Informe a quantidade';
                         }
-                        final qty = double.tryParse(val);
+                        // Substitui vírgula por ponto para o double.tryParse não falhar
+                        final normalizedVal = val.replaceAll(',', '.');
+                        final qty = double.tryParse(normalizedVal);
                         if (qty == null || qty <= 0) {
-                          return 'Deve ser > 0';
+                          return 'Deve ser um número maior que 0';
                         }
                         if (_selectedType == 'SAIDA' && qty > _saldoAtual) {
                           return 'Excede o saldo ($_saldoAtual)';

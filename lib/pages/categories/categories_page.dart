@@ -33,73 +33,100 @@ class _CategoriesPageState extends State<CategoriesPage> {
 
   void _showAddEditDialog([CategoryModel? category]) {
     _nameController.text = category?.nome ?? '';
+
     showDialog(
       context: context,
       builder: (context) {
-        return AlertDialog(
-          title: Text(category == null ? 'Nova Categoria' : 'Editar Categoria'),
-          content: Form(
-            key: _formKey,
-            child: TextFormField(
-              controller: _nameController,
-              decoration: const InputDecoration(
-                labelText: 'Nome da Categoria',
-                border: OutlineInputBorder(),
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            // Listener temporário para atualizar o estado interno do Dialog ao digitar/apagar
+            void onTextChanged() {
+              setDialogState(() {});
+            }
+
+            _nameController.addListener(onTextChanged);
+
+            return AlertDialog(
+              title: Text(
+                category == null ? 'Nova Categoria' : 'Editar Categoria',
               ),
-              validator: (val) {
-                if (val == null || val.trim().isEmpty) {
-                  return 'Por favor, insira o nome';
-                }
-                return null;
-              },
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancelar'),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                if (_formKey.currentState!.validate()) {
-                  try {
-                    if (category == null) {
-                      await _controller.addCategory(_nameController.text);
-                    } else {
-                      await _controller.editCategory(
-                        CategoryModel(
-                          id: category.id,
-                          nome: _nameController.text,
-                        ),
-                      );
+              content: Form(
+                key: _formKey,
+                child: TextFormField(
+                  controller: _nameController,
+                  decoration: InputDecoration(
+                    labelText: 'Nome da Categoria',
+                    border: const OutlineInputBorder(),
+                    suffixIcon: _nameController.text.isNotEmpty
+                        ? IconButton(
+                            icon: const Icon(Icons.clear),
+                            onPressed: () {
+                              _nameController.clear();
+                              setDialogState(() {});
+                            },
+                          )
+                        : null,
+                  ),
+                  validator: (val) {
+                    if (val == null || val.trim().isEmpty) {
+                      return 'Por favor, insira o nome';
                     }
-                    if (!mounted) return;
+                    return null;
+                  },
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    _nameController.removeListener(onTextChanged);
                     Navigator.pop(context);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          category == null
-                              ? 'Categoria adicionada!'
-                              : 'Categoria atualizada!',
-                        ),
-                      ),
-                    );
-                  } catch (e) {
-                    if (!mounted) return;
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text(
-                          'Erro: Categoria já existe ou dados inválidos.',
-                        ),
-                        backgroundColor: Colors.red,
-                      ),
-                    );
-                  }
-                }
-              },
-              child: const Text('Salvar'),
-            ),
-          ],
+                  },
+                  child: const Text('Cancelar'),
+                ),
+                ElevatedButton(
+                  onPressed: () async {
+                    if (_formKey.currentState!.validate()) {
+                      try {
+                        if (category == null) {
+                          await _controller.addCategory(_nameController.text);
+                        } else {
+                          await _controller.editCategory(
+                            CategoryModel(
+                              id: category.id,
+                              nome: _nameController.text,
+                            ),
+                          );
+                        }
+                        _nameController.removeListener(onTextChanged);
+                        if (!mounted) return;
+                        Navigator.pop(context);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              category == null
+                                  ? 'Categoria adicionada!'
+                                  : 'Categoria atualizada!',
+                            ),
+                          ),
+                        );
+                      } catch (e) {
+                        if (!mounted) return;
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                              'Erro: Categoria já existe ou dados inválidos.',
+                            ),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                      }
+                    }
+                  },
+                  child: const Text('Salvar'),
+                ),
+              ],
+            );
+          },
         );
       },
     );
@@ -232,7 +259,6 @@ class _CategoriesPageState extends State<CategoriesPage> {
           }
 
           return ListView.builder(
-            // separatorBuilder: (context, index) => const Divider(),
             padding: const EdgeInsets.all(16.0),
             itemCount: categoriesList.length,
             itemBuilder: (context, index) {

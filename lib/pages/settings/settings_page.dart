@@ -115,6 +115,7 @@ class _SettingsPageState extends State<SettingsPage> {
                             'Configurações de E-mail (SMTP)',
                             style: theme.textTheme.titleLarge?.copyWith(
                               fontWeight: FontWeight.bold,
+                              fontSize: 20,
                             ),
                           ),
                         ],

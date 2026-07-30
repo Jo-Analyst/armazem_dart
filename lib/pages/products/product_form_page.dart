@@ -28,6 +28,14 @@ class _ProductFormPageState extends State<ProductFormPage> {
     super.initState();
     final isEditing = widget.product != null;
 
+    // Listeners para reconstruir o widget e exibir/ocultar o botão de limpar em tempo real
+    _nameController.addListener(() {
+      if (mounted) setState(() {});
+    });
+    _newCategoryController.addListener(() {
+      if (mounted) setState(() {});
+    });
+
     if (isEditing) {
       _nameController.text = widget.product!.nome;
       _selectedCategoryId = widget.product!.categoriaId;
@@ -139,9 +147,15 @@ class _ProductFormPageState extends State<ProductFormPage> {
               // Nome do Produto
               TextFormField(
                 controller: _nameController,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Nome do Produto *',
-                  border: OutlineInputBorder(),
+                  border: const OutlineInputBorder(),
+                  suffixIcon: _nameController.text.isNotEmpty
+                      ? IconButton(
+                          icon: const Icon(Icons.clear),
+                          onPressed: () => _nameController.clear(),
+                        )
+                      : null,
                 ),
                 validator: (val) {
                   if (val == null || val.trim().isEmpty) {
@@ -194,9 +208,10 @@ class _ProductFormPageState extends State<ProductFormPage> {
                           _selectedCategoryId = null;
                         });
                       },
-                      icon: const Icon(Icons.add),
+                      icon: const Icon(Icons.add, color: Colors.white),
                       tooltip: 'Criar nova categoria',
                     ),
+                    
                   ],
                 ),
               ] else ...[
@@ -206,10 +221,17 @@ class _ProductFormPageState extends State<ProductFormPage> {
                       child: TextFormField(
                         controller: _newCategoryController,
                         autofocus: true,
-                        decoration: const InputDecoration(
+                        decoration: InputDecoration(
                           labelText: 'Nome da Nova Categoria *',
-                          border: OutlineInputBorder(),
+                          border: const OutlineInputBorder(),
                           hintText: 'Ex: Laticínios',
+                          suffixIcon: _newCategoryController.text.isNotEmpty
+                              ? IconButton(
+                                  icon: const Icon(Icons.clear),
+                                  onPressed: () =>
+                                      _newCategoryController.clear(),
+                                )
+                              : null,
                         ),
                         validator: (val) {
                           if (_addingNewCategory &&
@@ -221,7 +243,12 @@ class _ProductFormPageState extends State<ProductFormPage> {
                       ),
                     ),
                     const SizedBox(width: 8),
-                    IconButton(
+                    IconButton.filled(
+                      style: IconButton.styleFrom(
+                        backgroundColor: Colors.red, // Cor de fundo do botão
+                        foregroundColor:
+                            Colors.white, // Cor do ícone (opcional)
+                      ),
                       onPressed: () {
                         setState(() {
                           _addingNewCategory = false;
@@ -258,7 +285,7 @@ class _ProductFormPageState extends State<ProductFormPage> {
                     const SizedBox(width: 6),
                     const Expanded(
                       child: Text(
-                        'O saldo do produto é calculado automaticamente pelas movimentações de entrada e saída.',
+                        'O saldo do produto é calculated automaticamente pelas movimentações de entrada e saída.',
                         style: TextStyle(fontSize: 12),
                       ),
                     ),

@@ -194,7 +194,7 @@ class _BackupPageState extends State<BackupPage> {
                                         : () =>
                                               _backupController.exportBackup(),
                                     icon: const Icon(Icons.download),
-                                    label: const Text('Exportar Backup'),
+                                    label: const Text('Exportar'),
                                   ),
                                 ),
                                 const SizedBox(width: 16),
@@ -216,7 +216,7 @@ class _BackupPageState extends State<BackupPage> {
                                         ? null
                                         : () => _confirmarRestauracao(context),
                                     icon: const Icon(Icons.upload),
-                                    label: const Text('Restaurar Backup'),
+                                    label: const Text('Restaurar'),
                                   ),
                                 ),
                               ],
