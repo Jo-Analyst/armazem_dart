@@ -147,7 +147,13 @@ class _SettingsPageState extends State<SettingsPage> {
                                 size: 18,
                               ),
                               SizedBox(width: 8),
-                              Text('SMTP configurado e pronto para uso.'),
+                              Text(
+                                'SMTP configurado e pronto para uso.',
+                                style: TextStyle(
+                                  color: Colors.green,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
                             ],
                           ),
                         ),

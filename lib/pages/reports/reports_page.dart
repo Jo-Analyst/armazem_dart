@@ -32,6 +32,7 @@ class _ReportsPageState extends State<ReportsPage> {
 
   Future<void> _selectDateRange() async {
     final DateTimeRange? picked = await showDateRangePicker(
+      locale: const Locale('pt', 'BR'),
       context: context,
       initialDateRange: DateTimeRange(
         start: _controller.startDate.value,

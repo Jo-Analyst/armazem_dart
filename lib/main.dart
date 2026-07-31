@@ -2,8 +2,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'core/locator/locator.dart';
 import 'core/routes/app_routes.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   setupLocator();
   runApp(const MyApp());
@@ -17,6 +18,13 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Controle de Almoxarifado',
       debugShowCheckedModeBanner: false,
+      localizationsDelegates: [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      // Idiomas suportados no aplicativo
+      supportedLocales: [Locale('pt', 'BR')],
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
           seedColor: Colors.teal,
