@@ -1,5 +1,7 @@
 import 'package:armazem/models/movement_model.dart';
 import 'package:armazem/models/product_model.dart';
+import 'package:armazem/pages/armazem_page.dart';
+import 'package:armazem/pages/splash/splash_page.dart';
 import 'package:flutter/material.dart';
 import '../../pages/backup/backup_page.dart';
 import '../../pages/categories/categories_page.dart';
@@ -13,6 +15,7 @@ import '../../pages/settings/settings_page.dart';
 
 class AppRoutes {
   static const home = '/';
+  static const armazem = '/armazem';
   static const products = '/products';
   static const productForm = '/product-form';
   static const categories = '/categories';
@@ -21,15 +24,18 @@ class AppRoutes {
   static const reports = '/reports';
   static const backup = '/backup';
   static const settings = '/settings';
+  static const splash = '/splash';
 
   static final Map<String, WidgetBuilder> routes = {
     home: (_) => const HomePage(),
+    armazem: (_) => const ArmazemPage(),
     products: (_) => const ProductsPage(),
     categories: (_) => const CategoriesPage(),
     movements: (_) => const MovementsPage(),
     reports: (_) => const ReportsPage(),
     backup: (_) => const BackupPage(),
     settings: (_) => const SettingsPage(),
+    splash: (_) => const SplashPage(),
   };
 
   static Route<T> onGenerateRoute<T>(RouteSettings settings) {

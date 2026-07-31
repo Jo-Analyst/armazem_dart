@@ -95,6 +95,7 @@ class _MovementsPageState extends State<MovementsPage> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.teal,
+        foregroundColor: Colors.white,
         title: Text(
           _selectedMovement != null
               ? 'Movimentação Selecionada'
@@ -104,7 +105,7 @@ class _MovementsPageState extends State<MovementsPage> {
         actions: _selectedMovement != null
             ? [
                 IconButton(
-                  icon: const Icon(Icons.edit),
+                  icon: const Icon(Icons.edit, color: Colors.white),
                   tooltip: 'Editar',
                   onPressed: () {
                     Navigator.pushNamed(
@@ -116,7 +117,7 @@ class _MovementsPageState extends State<MovementsPage> {
                   },
                 ),
                 IconButton(
-                  icon: const Icon(Icons.delete),
+                  icon: const Icon(Icons.delete, color: Colors.white),
                   tooltip: 'Excluir',
                   onPressed: () {
                     _confirmDelete(_selectedMovement!);
@@ -124,7 +125,7 @@ class _MovementsPageState extends State<MovementsPage> {
                   },
                 ),
                 IconButton(
-                  icon: const Icon(Icons.close),
+                  icon: const Icon(Icons.close, color: Colors.white),
                   tooltip: 'Cancelar seleção',
                   onPressed: () => setState(() => _selectedMovement = null),
                 ),
@@ -199,7 +200,7 @@ class _MovementsPageState extends State<MovementsPage> {
                         borderRadius: BorderRadius.circular(8),
                         side: BorderSide(color: Colors.grey),
                       )
-                    : Border(bottom: BorderSide(color: Colors.grey)),
+                    : null,
                 color: _selectedMovement?.id == mov.id
                     ? Colors.grey.shade50
                     : null,

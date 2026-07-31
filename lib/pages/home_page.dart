@@ -1,3 +1,4 @@
+import 'package:armazem/pages/armazem_page.dart';
 import 'package:flutter/material.dart';
 import '../core/locator/locator.dart';
 import '../controllers/backup_controller.dart';
@@ -24,6 +25,7 @@ class _HomePageState extends State<HomePage> {
   final _settingsController = locator<SettingsController>();
 
   final List<Widget> _pages = [
+    const ArmazemPage(),
     const ProductsPage(),
     const CategoriesPage(),
     const MovementsPage(),
@@ -33,6 +35,11 @@ class _HomePageState extends State<HomePage> {
   ];
 
   final List<NavigationDestination> _destinations = const [
+    NavigationDestination(
+      icon: Icon(Icons.home_outlined),
+      selectedIcon: Icon(Icons.home),
+      label: 'Início',
+    ),
     NavigationDestination(
       icon: Icon(Icons.inventory_2_outlined),
       selectedIcon: Icon(Icons.inventory_2),

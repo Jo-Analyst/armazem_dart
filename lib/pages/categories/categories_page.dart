@@ -270,7 +270,7 @@ class _CategoriesPageState extends State<CategoriesPage> {
                         borderRadius: BorderRadius.circular(8),
                         side: const BorderSide(color: Colors.grey),
                       )
-                    : const Border(bottom: BorderSide(color: Colors.grey)),
+                    : null,
                 margin: const EdgeInsets.only(bottom: 12.0),
                 elevation: 1,
                 color: _selectedCategory?.id == cat.id
@@ -278,6 +278,11 @@ class _CategoriesPageState extends State<CategoriesPage> {
                     : null,
                 child: ListTile(
                   onLongPress: () => setState(() => _selectedCategory = cat),
+                  leading: CircleAvatar(
+                    backgroundColor: const Color.fromARGB(255, 226, 178, 116),
+                    foregroundColor: Colors.black,
+                    child: Icon(Icons.category_outlined),
+                  ),
                   title: Text(
                     cat.nome,
                     style: TextStyle(

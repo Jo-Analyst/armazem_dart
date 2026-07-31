@@ -35,7 +35,11 @@ class _SplashPageState extends State<SplashPage> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Image.asset('assets/images/logo-fundo.png'),
+              Image.asset(
+                'assets/images/logo_image.png',
+                width: 300,
+                height: 300,
+              ),
               AnimatedTextKit(
                 pause: Duration.zero,
                 // isRepeatingAnimation: true,
@@ -61,6 +65,8 @@ class _SplashPageState extends State<SplashPage> {
   }
 
   Future<void> _navigateToHome() async {
-    Timer(const Duration(seconds: 4), () async {});
+    Timer(const Duration(seconds: 4), () async {
+      Navigator.pushNamedAndRemoveUntil(context, '/home', (route) => false);
+    });
   }
 }

@@ -25,7 +25,7 @@ class ProductItemCard extends StatelessWidget {
               borderRadius: BorderRadius.circular(8),
               side: const BorderSide(color: Colors.grey),
             )
-          : const Border(bottom: BorderSide(color: Colors.grey)),
+          : null,
       margin: const EdgeInsets.only(bottom: 10.0),
       elevation: 1,
       color: isSelected ? Colors.grey.shade50 : null,
