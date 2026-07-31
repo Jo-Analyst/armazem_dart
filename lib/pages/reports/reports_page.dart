@@ -204,6 +204,7 @@ class _ReportsPageState extends State<ReportsPage> {
           fontWeight: header ? pw.FontWeight.bold : null,
           color: header ? PdfColors.white : (color ?? PdfColors.black),
         ),
+        textAlign: pw.TextAlign.center,
       ),
     );
   }
@@ -226,6 +227,7 @@ class _ReportsPageState extends State<ReportsPage> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.teal,
+        foregroundColor: Colors.white,
         title: const Text('Relatório de Movimentações'),
         elevation: 2,
         actions: [
@@ -356,9 +358,19 @@ class _ReportsPageState extends State<ReportsPage> {
                         itemBuilder: (context, index) {
                           final mov = list[index];
                           final isEntrada = mov.isEntrada;
-                          final dataE =
-                              DateTime.tryParse(mov.dataEntrada) ??
-                              DateTime.now();
+                          final dtE = mov.dataEntrada.split('T')[0];
+                          final dateE = dtE.isNotEmpty
+                              ? _dateFormat
+                                    .format(
+                                      DateTime(
+                                        int.parse(dtE.split('-')[0]),
+                                        int.parse(dtE.split('-')[1]),
+                                        int.parse(dtE.split('-')[2]),
+                                      ),
+                                    )
+                                    .split(' ')[0]
+                              : '';
+
                           final dataS = mov.dataSaida != null
                               ? DateTime.tryParse(mov.dataSaida!)
                               : null;
@@ -381,9 +393,9 @@ class _ReportsPageState extends State<ReportsPage> {
                               subtitle: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text('Entrada: ${_dateFormat.format(dataE)}'),
+                                  if (dateE.isNotEmpty) Text('Entrada: $dateE'),
                                   if (dataS != null)
-                                    Text('Saída: ${_dateFormat.format(dataS)}'),
+                                    Text('Saída: ${_dateFormat.format(dataS) .split(' ')[0]}'),
                                   if (mov.observacao != null)
                                     Text('Obs: ${mov.observacao}'),
                                 ],

@@ -51,6 +51,9 @@ dependencies:
   archive: ^3.6.1
   share_plus: ^13.2.0
   file_selector: ^1.0.1
+  msix: ^3.18.0
+  flutter_launcher_icons: ^0.14.4
+  # flutter_native_splash: ^2.4.4
 
 dev_dependencies:
   flutter_test:
@@ -103,3 +106,23 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+
+msix_config:
+    display_name: Armazem
+    output_name: Armazem 
+    publisher_display_name: Joelmir Rogério Carvalho
+    # identity_name: com.promocaosocial.cras.armazem
+    logo_path: assets/images/logo-image.png
+
+flutter_launcher_icons:
+  android: "launcher_icon"
+  image_path: "assets/images/logo_image.png"
+  min_sdk_android: 21
+
+# flutter_native_splash:
+#   color: "#424242"
+#   image: "assets/images/logo_image.png"
+#   android: true
+#   # android_12:
+#   #   color: "#424242"
+#   #   image: "assets/images/logo_image.png"

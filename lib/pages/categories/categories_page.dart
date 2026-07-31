@@ -189,6 +189,7 @@ class _CategoriesPageState extends State<CategoriesPage> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.teal,
+        foregroundColor: Colors.white,
         title: Text(
           _selectedCategory != null ? 'Categoria Selecionada' : 'Categorias',
         ),

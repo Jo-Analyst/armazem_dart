@@ -17,7 +17,7 @@ class _MovementsPageState extends State<MovementsPage> {
   final _controller = locator<MovementController>();
   MovementModel? _selectedMovement;
 
-  final _dateTimeFormat = DateFormat('dd/MM/yyyy HH:mm');
+  final _dateTimeFormat = DateFormat('dd/MM/yyyy');
 
   @override
   void initState() {
@@ -53,10 +53,11 @@ class _MovementsPageState extends State<MovementsPage> {
             FilledButton(
               style: FilledButton.styleFrom(backgroundColor: Colors.red),
               onPressed: () async {
+                final nav = Navigator.of(context);
                 try {
                   await _controller.deleteMovement(movement.id!);
                   if (!mounted) return;
-                  Navigator.pop(context);
+                  nav.pop();
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
                       content: Text('Movimentação excluída.'),
@@ -65,7 +66,7 @@ class _MovementsPageState extends State<MovementsPage> {
                   );
                 } catch (e) {
                   if (!mounted) return;
-                  Navigator.pop(context);
+                  nav.pop();
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(
@@ -175,8 +176,17 @@ class _MovementsPageState extends State<MovementsPage> {
             itemBuilder: (context, index) {
               final mov = list[index];
               final isEntrada = mov.isEntrada;
-              final dataE =
-                  DateTime.tryParse(mov.dataEntrada) ?? DateTime.now();
+              final dt = mov.dataEntrada.split('T')[0];
+              final dateFormated = dt.isNotEmpty
+                  ? _dateTimeFormat.format(
+                      DateTime(
+                        int.parse(dt.split('-')[0]),
+                        int.parse(dt.split('-')[1]),
+                        int.parse(dt.split('-')[2]),
+                      ),
+                    )
+                  : '';
+
               final dataS = mov.dataSaida != null
                   ? DateTime.tryParse(mov.dataSaida!)
                   : null;
@@ -218,17 +228,18 @@ class _MovementsPageState extends State<MovementsPage> {
                   subtitle: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      FittedBox(
-                        fit: BoxFit.scaleDown,
-                        child: Text(
-                          'Ent: ${_dateTimeFormat.format(dataE).split(' ')[0]}',
-                          style: TextStyle(
-                            color: _selectedMovement?.id == mov.id
-                                ? Colors.black
-                                : null,
+                      if (dateFormated.isNotEmpty)
+                        FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            'Ent: $dateFormated',
+                            style: TextStyle(
+                              color: _selectedMovement?.id == mov.id
+                                  ? Colors.black
+                                  : null,
+                            ),
                           ),
                         ),
-                      ),
                       if (dataS != null)
                         FittedBox(
                           fit: BoxFit.scaleDown,

@@ -118,6 +118,19 @@ class _MovementFormPageState extends State<MovementFormPage> {
   Future<void> _saveMovement() async {
     if (!_formKey.currentState!.validate()) return;
 
+    // Validar quantidade antes de converter
+    final quantidadeText = _quantityController.text.trim().replaceAll(',', '.');
+    final quantidade = double.tryParse(quantidadeText);
+    if (quantidade == null || quantidade <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Quantidade inválida'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
     setState(() => _isLoading = true);
 
     try {
@@ -125,11 +138,9 @@ class _MovementFormPageState extends State<MovementFormPage> {
         await _controller.registerMovement(
           produtoId: _selectedProduct!.id!,
           tipo: _selectedType,
-          quantidade: double.parse(
-            _quantityController.text.trim().replaceAll(',', '.'),
-          ),
+          quantidade: quantidade,
           unidadeMedida: _selectedUnit,
-          dataEntrada: _selectedType == 'ENTRADA'
+          dataEntrada: _selectedType.toUpperCase() == 'ENTRADA'
               ? _dataEntrada!.toIso8601String()
               : '',
           dataSaida: _selectedType == 'SAIDA'
@@ -145,14 +156,12 @@ class _MovementFormPageState extends State<MovementFormPage> {
             id: widget.movement!.id,
             produtoId: _selectedProduct!.id!,
             tipo: _selectedType,
-            quantidade: double.parse(
-              _quantityController.text.trim().replaceAll(',', '.'),
-            ),
+            quantidade: quantidade,
             unidadeMedida: _selectedUnit,
-            dataEntrada: _selectedType == 'ENTRADA'
+            dataEntrada: _selectedType.toUpperCase() == 'ENTRADA'
                 ? _dataEntrada!.toIso8601String()
                 : '',
-            dataSaida: _selectedType == 'SAIDA'
+            dataSaida: _selectedType.toUpperCase() == 'SAIDA'
                 ? (_dataSaida?.toIso8601String() ?? '')
                 : '',
             observacao: _obsController.text.trim().isEmpty
@@ -357,10 +366,10 @@ class _MovementFormPageState extends State<MovementFormPage> {
                       _selectedType = val;
                       if (val == 'ENTRADA') {
                         _dataSaida = null;
-                        _dataEntrada ??= DateTime.now();
+                        _dataEntrada = DateTime.now();
                       } else if (val == 'SAIDA') {
                         _dataEntrada = null;
-                        _dataSaida = null;
+                        _dataSaida = DateTime.now();
                       }
                     });
                   }
@@ -490,9 +499,9 @@ class _MovementFormPageState extends State<MovementFormPage> {
                       border: const OutlineInputBorder(),
                       suffixIcon: const Icon(Icons.calendar_today),
                       filled: _selectedType == 'SAIDA',
-                      fillColor: _selectedType == 'SAIDA'
-                          ? Colors.grey.shade100
-                          : null,
+                      /*  fillColor: _selectedType == 'SAIDA'
+                           ? Colors.transparent
+                           : null, */
                     ),
                     child: Text(
                       _selectedType == 'SAIDA'
@@ -533,9 +542,9 @@ class _MovementFormPageState extends State<MovementFormPage> {
                       border: const OutlineInputBorder(),
                       suffixIcon: const Icon(Icons.calendar_today),
                       filled: _selectedType == 'ENTRADA',
-                      fillColor: _selectedType == 'ENTRADA'
-                          ? Colors.grey.shade100
-                          : null,
+                      // fillColor: _selectedType == 'ENTRADA'
+                      //     ? Colors.grey.shade100
+                      //     : null,
                     ),
                     child: Text(
                       _selectedType == 'ENTRADA'

@@ -29,7 +29,12 @@ class _BackupPageState extends State<BackupPage> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Backup e Restauração'), elevation: 2),
+      appBar: AppBar(
+        foregroundColor: Colors.white,
+        backgroundColor: Colors.teal,
+        title: const Text('Backup e Restauração'),
+        elevation: 2,
+      ),
       body: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24.0),
