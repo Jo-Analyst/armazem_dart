@@ -17,9 +17,11 @@ class ReportController {
   final selectedProductId = signal<int?>(null);
 
   final startDate = signal<DateTime>(
-    DateTime.now().subtract(const Duration(days: 30)),
+    DateTime(DateTime.now().year, DateTime.now().month, 1),
   );
-  final endDate = signal<DateTime>(DateTime.now());
+  final endDate = signal<DateTime>(
+    DateTime(DateTime.now().year, DateTime.now().month + 1, 0),
+  );
 
   Future<void> init() async {
     await _loadProducts();
