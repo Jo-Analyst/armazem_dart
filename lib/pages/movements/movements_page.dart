@@ -277,6 +277,7 @@ class _MovementsPageState extends State<MovementsPage> {
         },
       ),
       floatingActionButton: FloatingActionButton.extended(
+        foregroundColor: Colors.white,
         onPressed: () {
           if (_controller.products.value.isEmpty) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -289,7 +290,7 @@ class _MovementsPageState extends State<MovementsPage> {
           }
           Navigator.pushNamed(context, AppRoutes.movementForm);
         },
-        icon: const Icon(Icons.swap_horiz),
+        icon: const Icon(Icons.move_down),
         label: const Text('Nova Movimentação'),
       ),
     );

@@ -302,6 +302,7 @@ class _CategoriesPageState extends State<CategoriesPage> {
         },
       ),
       floatingActionButton: FloatingActionButton.extended(
+        foregroundColor: Colors.white,
         onPressed: () => _showAddEditDialog(),
         icon: const Icon(Icons.add),
         label: const Text('Nova Categoria'),

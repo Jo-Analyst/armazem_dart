@@ -1,3 +1,4 @@
+import 'package:armazem/pages/products/products_page.dart';
 import 'package:flutter/material.dart';
 import 'products/product_form_page.dart';
 import 'movements/movement_form_page.dart';
@@ -50,7 +51,7 @@ class ArmazemPage extends StatelessWidget {
                     ),
                   ),
                 ),
-                // const SizedBox(height: 40),
+                const SizedBox(height: 18),
                 isWideScreen
                     ? Row(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -59,32 +60,13 @@ class ArmazemPage extends StatelessWidget {
                             child: _buildMenuCard(
                               context,
                               icon: Icons.inventory_2,
-                              title: 'Cadastrar Produto',
+                              title: 'Produto',
                               color: Colors.teal,
                               onTap: () {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) =>
-                                        const ProductFormPage(),
-                                  ),
-                                );
-                              },
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: _buildMenuCard(
-                              context,
-                              icon: Icons.move_down,
-                              title: 'Cadastrar Movimentação',
-                              color: Colors.orange,
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) =>
-                                        const MovementFormPage(),
+                                    builder: (context) => const ProductsPage(),
                                   ),
                                 );
                               },
@@ -95,7 +77,7 @@ class ArmazemPage extends StatelessWidget {
                             child: _buildMenuCard(
                               context,
                               icon: Icons.category,
-                              title: 'Cadastrar Categoria',
+                              title: 'Categoria',
                               color: Colors.purple,
                               onTap: () {
                                 Navigator.push(
@@ -103,6 +85,24 @@ class ArmazemPage extends StatelessWidget {
                                   MaterialPageRoute(
                                     builder: (context) =>
                                         const CategoriesPage(),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: _buildMenuCard(
+                              context,
+                              icon: Icons.move_down,
+                              title: 'Nova Movimentação',
+                              color: Colors.orange,
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        const MovementFormPage(),
                                   ),
                                 );
                               },

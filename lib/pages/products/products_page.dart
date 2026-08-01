@@ -241,6 +241,7 @@ class _ProductsPageState extends State<ProductsPage> {
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
+        foregroundColor: Colors.white,
         onPressed: () async {
           final result = await Navigator.pushNamed(
             context,

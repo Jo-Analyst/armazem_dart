@@ -423,6 +423,7 @@ class _ReportsPageState extends State<ReportsPage> {
         builder: (context) {
           final list = _controller.movements.value;
           return FloatingActionButton.extended(
+            foregroundColor: Colors.white,
             onPressed: list.isEmpty ? null : () => _gerarPdf(list),
             icon: const Icon(Icons.print),
             label: const Text('Imprimir'),
