@@ -350,6 +350,7 @@ class _MovementFormPageState extends State<MovementFormPage> {
                   labelText: 'Tipo *',
                   border: OutlineInputBorder(),
                 ),
+                isExpanded: true,
                 items: const [
                   DropdownMenuItem(
                     value: 'ENTRADA',
@@ -459,6 +460,7 @@ class _MovementFormPageState extends State<MovementFormPage> {
                         labelText: 'Unidade *',
                         border: OutlineInputBorder(),
                       ),
+                      isExpanded: true,
                       items: UnidadeMedida.values.map((u) {
                         return DropdownMenuItem(
                           value: u.label,

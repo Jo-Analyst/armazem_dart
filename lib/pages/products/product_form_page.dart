@@ -179,6 +179,7 @@ class _ProductFormPageState extends State<ProductFormPage> {
                               labelText: 'Categoria *',
                               border: OutlineInputBorder(),
                             ),
+                            isExpanded: true,
                             items: _controller.categories.value.map((cat) {
                               return DropdownMenuItem<int>(
                                 value: cat.id,
@@ -211,7 +212,6 @@ class _ProductFormPageState extends State<ProductFormPage> {
                       icon: const Icon(Icons.add, color: Colors.white),
                       tooltip: 'Criar nova categoria',
                     ),
-                    
                   ],
                 ),
               ] else ...[
@@ -285,7 +285,7 @@ class _ProductFormPageState extends State<ProductFormPage> {
                     const SizedBox(width: 6),
                     const Expanded(
                       child: Text(
-                        'O saldo do produto é calculated automaticamente pelas movimentações de entrada e saída.',
+                        'O saldo do produto é calculado automaticamente pelas movimentações de entrada e saída.',
                         style: TextStyle(fontSize: 12),
                       ),
                     ),

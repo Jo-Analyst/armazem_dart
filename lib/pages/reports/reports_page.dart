@@ -320,6 +320,7 @@ class _ReportsPageState extends State<ReportsPage> {
                           labelText: 'Filtrar por produto',
                           border: OutlineInputBorder(),
                         ),
+                        isExpanded: true,
                         items: [
                           const DropdownMenuItem<int?>(
                             value: null,
@@ -395,7 +396,9 @@ class _ReportsPageState extends State<ReportsPage> {
                                 children: [
                                   if (dateE.isNotEmpty) Text('Entrada: $dateE'),
                                   if (dataS != null)
-                                    Text('Saída: ${_dateFormat.format(dataS) .split(' ')[0]}'),
+                                    Text(
+                                      'Saída: ${_dateFormat.format(dataS).split(' ')[0]}',
+                                    ),
                                   if (mov.observacao != null)
                                     Text('Obs: ${mov.observacao}'),
                                 ],

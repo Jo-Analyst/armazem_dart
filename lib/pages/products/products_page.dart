@@ -156,6 +156,7 @@ class _ProductsPageState extends State<ProductsPage> {
                           labelText: 'Categoria',
                           border: OutlineInputBorder(),
                         ),
+                        isExpanded: true,
                         items: [
                           const DropdownMenuItem<int?>(
                             value: null,
