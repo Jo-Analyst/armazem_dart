@@ -42,7 +42,7 @@ class _MovementsPageState extends State<MovementsPage> {
             'Deseja excluir a movimentação de '
             '${movement.isEntrada ? 'ENTRADA' : 'SAÍDA'} de '
             '${movement.quantidade} ${movement.unidadeMedida} '
-            'do produto "${movement.produtoNome ?? 'Desconhecido'}"?\n\n'
+            'do produto "${movement.productName ?? 'Desconhecido'}"?\n\n'
             'O saldo do produto será recalculado automaticamente.',
           ),
           actions: [
@@ -218,7 +218,7 @@ class _MovementsPageState extends State<MovementsPage> {
                     ),
                   ),
                   title: Text(
-                    mov.produtoNome ?? 'Produto Desconhecido',
+                    '${mov.productName} (${mov.productVolume})',
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       color: _selectedMovement?.id == mov.id

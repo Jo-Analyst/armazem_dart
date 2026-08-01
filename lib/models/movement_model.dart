@@ -30,7 +30,8 @@ class MovementModel {
   final String? observacao;
 
   // Campos de UI (via JOIN)
-  final String? produtoNome;
+  final String? productName;
+  final String? productVolume;
 
   MovementModel({
     this.id,
@@ -41,7 +42,8 @@ class MovementModel {
     required this.dataEntrada,
     this.dataSaida,
     this.observacao,
-    this.produtoNome,
+    this.productName,
+    this.productVolume,
   });
 
   Map<String, dynamic> toMap() {
@@ -70,7 +72,8 @@ class MovementModel {
           DateTime.now().toIso8601String(),
       dataSaida: map['data_saida'] as String?,
       observacao: map['observacao'] as String?,
-      produtoNome: map['produto_nome'] as String?,
+      productName: map['product_name'] as String?,
+      productVolume: map['product_volume'] as String?,
     );
   }
 

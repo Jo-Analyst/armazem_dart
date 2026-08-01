@@ -76,7 +76,7 @@ class MovementRepository {
   Future<List<MovementModel>> getAll() async {
     final db = await _dbHelper.database;
     final List<Map<String, dynamic>> maps = await db.rawQuery('''
-      SELECT m.*, p.nome AS produto_nome
+      SELECT m.*, p.nome AS product_name, p.volume AS product_volume
       FROM movimentacoes m
       INNER JOIN produtos p ON m.produto_id = p.id
       ORDER BY m.data_entrada DESC
@@ -91,7 +91,7 @@ class MovementRepository {
     final db = await _dbHelper.database;
     final List<Map<String, dynamic>> maps = await db.rawQuery(
       '''
-      SELECT m.*, p.nome AS produto_nome
+      SELECT m.*, p.nome AS product_name, p.volume AS product_volume
       FROM movimentacoes m
       INNER JOIN produtos p ON m.produto_id = p.id
       WHERE DATE(
@@ -124,7 +124,7 @@ class MovementRepository {
     final db = await _dbHelper.database;
     final List<Map<String, dynamic>> maps = await db.rawQuery(
       '''
-      SELECT m.*, p.nome AS produto_nome
+      SELECT m.*, p.nome AS product_name, p.volume AS product_volume
       FROM movimentacoes m
       INNER JOIN produtos p ON m.produto_id = p.id
       WHERE m.produto_id = ?
@@ -210,7 +210,7 @@ class MovementRepository {
     final db = await _dbHelper.database;
     final List<Map<String, dynamic>> maps = await db.rawQuery(
       '''
-      SELECT m.*, p.nome AS produto_nome
+      SELECT m.*, p.nome AS product_name
       FROM movimentacoes m
       INNER JOIN produtos p ON m.produto_id = p.id
       WHERE m.id = ?

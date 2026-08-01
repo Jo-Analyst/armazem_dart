@@ -136,7 +136,7 @@ class _ReportsPageState extends State<ReportsPage> {
                     : '-';
                 return pw.TableRow(
                   children: [
-                    _pdfCell(mov.produtoNome ?? '-'),
+                    _pdfCell('${mov.productName} (${mov.productVolume})'),
                     _pdfCell(
                       mov.tipo,
                       color: isEntrada ? PdfColors.green800 : PdfColors.red800,
@@ -390,7 +390,9 @@ class _ReportsPageState extends State<ReportsPage> {
                                   color: isEntrada ? Colors.green : Colors.red,
                                 ),
                               ),
-                              title: Text(mov.produtoNome ?? 'Produto'),
+                              title: Text(
+                                '${mov.productName} (${mov.productVolume})',
+                              ),
                               subtitle: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
