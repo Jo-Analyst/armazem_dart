@@ -51,8 +51,9 @@ class _HomePageState extends State<HomePage> {
       label: 'Categorias',
     ),
     NavigationDestination(
-      icon: Icon(Icons.swap_horiz_outlined),
-      selectedIcon: Icon(Icons.swap_horiz),
+      // icon: Icon(Icons.swap_horiz_outlined),
+      icon: Icon(Icons.move_down_outlined),
+      selectedIcon: Icon(Icons.move_down),
       label: 'Movimentações',
     ),
     NavigationDestination(
