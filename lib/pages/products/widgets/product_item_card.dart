@@ -43,7 +43,9 @@ class ProductItemCard extends StatelessWidget {
           ),
         ),
         title: Text(
-          product.nome,
+          product.volume != null && product.volume!.isNotEmpty
+              ? '${product.nome} (${product.volume})'
+              : product.nome,
           style: TextStyle(
             fontWeight: FontWeight.bold,
             color: isSelected ? Colors.black : null,

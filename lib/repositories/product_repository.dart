@@ -21,6 +21,7 @@ class ProductRepository {
         p.id,
         p.nome,
         p.categoria_id,
+        p.volume,
         c.nome AS categoria_nome,
         COALESCE(
           (SELECT SUM(m.quantidade) FROM movimentacoes m 
@@ -40,7 +41,8 @@ class ProductRepository {
     final List<String> whereClauses = [];
 
     if (search != null && search.isNotEmpty) {
-      whereClauses.add('p.nome LIKE ?');
+      whereClauses.add('(p.nome LIKE ? OR p.volume LIKE ?)');
+      args.add('%$search%');
       args.add('%$search%');
     }
 
@@ -61,11 +63,13 @@ class ProductRepository {
 
   Future<ProductModel?> getById(int id) async {
     final db = await _dbHelper.database;
-    final List<Map<String, dynamic>> maps = await db.rawQuery('''
+    final List<Map<String, dynamic>> maps = await db.rawQuery(
+      '''
       SELECT 
         p.id,
         p.nome,
         p.categoria_id,
+        p.volume,
         c.nome AS categoria_nome,
         COALESCE(
           (SELECT SUM(m.quantidade) FROM movimentacoes m 
@@ -80,7 +84,9 @@ class ProductRepository {
       FROM produtos p
       INNER JOIN categorias c ON p.categoria_id = c.id
       WHERE p.id = ?
-    ''', [id]);
+    ''',
+      [id],
+    );
 
     if (maps.isEmpty) return null;
     return ProductModel.fromMap(maps.first);
@@ -98,10 +104,6 @@ class ProductRepository {
 
   Future<int> delete(int id) async {
     final db = await _dbHelper.database;
-    return await db.delete(
-      'produtos',
-      where: 'id = ?',
-      whereArgs: [id],
-    );
+    return await db.delete('produtos', where: 'id = ?', whereArgs: [id]);
   }
 }

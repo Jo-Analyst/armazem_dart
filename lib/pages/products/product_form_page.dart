@@ -18,6 +18,7 @@ class _ProductFormPageState extends State<ProductFormPage> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _newCategoryController = TextEditingController();
+  final _volumeController = TextEditingController();
 
   int? _selectedCategoryId;
   bool _addingNewCategory = false;
@@ -35,10 +36,14 @@ class _ProductFormPageState extends State<ProductFormPage> {
     _newCategoryController.addListener(() {
       if (mounted) setState(() {});
     });
+    _volumeController.addListener(() {
+      if (mounted) setState(() {});
+    });
 
     if (isEditing) {
       _nameController.text = widget.product!.nome;
       _selectedCategoryId = widget.product!.categoriaId;
+      _volumeController.text = widget.product!.volume ?? '';
     }
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
@@ -61,6 +66,7 @@ class _ProductFormPageState extends State<ProductFormPage> {
   void dispose() {
     _nameController.dispose();
     _newCategoryController.dispose();
+    _volumeController.dispose();
     super.dispose();
   }
 
@@ -94,6 +100,9 @@ class _ProductFormPageState extends State<ProductFormPage> {
         await _controller.addProduct(
           nome: _nameController.text.trim(),
           categoriaId: _selectedCategoryId!,
+          volume: _volumeController.text.trim().isEmpty
+              ? null
+              : _volumeController.text.trim(),
         );
       } else {
         await _controller.editProduct(
@@ -101,6 +110,9 @@ class _ProductFormPageState extends State<ProductFormPage> {
             id: widget.product?.id ?? 0,
             nome: _nameController.text.trim(),
             categoriaId: _selectedCategoryId!,
+            volume: _volumeController.text.trim().isEmpty
+                ? null
+                : _volumeController.text.trim(),
           ),
         );
       }
@@ -163,6 +175,23 @@ class _ProductFormPageState extends State<ProductFormPage> {
                   }
                   return null;
                 },
+              ),
+              const SizedBox(height: 16),
+
+              // Volume (opcional)
+              TextFormField(
+                controller: _volumeController,
+                decoration: InputDecoration(
+                  labelText: 'Volume (opcional)',
+                  hintText: 'Ex: 1 KG, 500 ML, 12 Unidades',
+                  border: const OutlineInputBorder(),
+                  suffixIcon: _volumeController.text.isNotEmpty
+                      ? IconButton(
+                          icon: const Icon(Icons.clear),
+                          onPressed: () => _volumeController.clear(),
+                        )
+                      : null,
+                ),
               ),
               const SizedBox(height: 16),
 

@@ -5,7 +5,7 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 class DatabaseHelper {
   static const _databaseName = 'armazem.db';
-  static const _databaseVersion = 2;
+  static const _databaseVersion = 3;
 
   static Database? _database;
 
@@ -42,15 +42,22 @@ class DatabaseHelper {
   }
 
   Future _onUpgrade(Database db, int oldVersion, int newVersion) async {
-    // Migração destrutiva: apaga e recria as tabelas com o novo esquema.
-    // Necessário pois a estrutura de produtos e movimentacoes mudou de forma
-    // incompatível (remoção de campos em produtos, adição/renomeação em movimentacoes).
-    await db.execute('PRAGMA foreign_keys = OFF');
-    await db.execute('DROP TABLE IF EXISTS movimentacoes');
-    await db.execute('DROP TABLE IF EXISTS produtos');
-    await db.execute('DROP TABLE IF EXISTS categorias');
-    await db.execute('PRAGMA foreign_keys = ON');
-    await _createTables(db);
+    if (oldVersion < 3) {
+      // Adicionar coluna volume na tabela produtos
+      await db.execute('ALTER TABLE produtos ADD COLUMN volume TEXT');
+    }
+
+    if (oldVersion < 2) {
+      // Migração destrutiva: apaga e recria as tabelas com o novo esquema.
+      // Necessário pois a estrutura de produtos e movimentacoes mudou de forma
+      // incompatível (remoção de campos em produtos, adição/renomeação em movimentacoes).
+      await db.execute('PRAGMA foreign_keys = OFF');
+      await db.execute('DROP TABLE IF EXISTS movimentacoes');
+      await db.execute('DROP TABLE IF EXISTS produtos');
+      await db.execute('DROP TABLE IF EXISTS categorias');
+      await db.execute('PRAGMA foreign_keys = ON');
+      await _createTables(db);
+    }
   }
 
   Future<void> _createTables(Database db) async {
@@ -68,6 +75,7 @@ class DatabaseHelper {
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         nome TEXT NOT NULL,
         categoria_id INTEGER NOT NULL,
+        volume TEXT,
         FOREIGN KEY (categoria_id) REFERENCES categorias (id) ON DELETE CASCADE
       )
     ''');

@@ -3,6 +3,7 @@ class ProductModel {
   final String nome;
   final int categoriaId;
   final String? categoriaNome;
+  final String? volume; // Volume do produto (ex: "1 KG", "500 ML")
 
   // Campos calculados dinamicamente (SUM entradas - SUM saídas)
   final double saldo;
@@ -13,6 +14,7 @@ class ProductModel {
     required this.nome,
     required this.categoriaId,
     this.categoriaNome,
+    this.volume,
     this.saldo = 0.0,
     this.unidadeSaldo,
   });
@@ -22,6 +24,7 @@ class ProductModel {
       if (id != null) 'id': id,
       'nome': nome,
       'categoria_id': categoriaId,
+      if (volume != null) 'volume': volume,
     };
   }
 
@@ -31,6 +34,7 @@ class ProductModel {
       nome: map['nome'] as String,
       categoriaId: map['categoria_id'] as int,
       categoriaNome: map['categoria_nome'] as String?,
+      volume: map['volume'] as String?,
       saldo: (map['saldo'] as num?)?.toDouble() ?? 0.0,
       unidadeSaldo: map['unidade_saldo'] as String?,
     );
@@ -46,6 +50,9 @@ class ProductModel {
     if (valor == valor.truncate()) {
       return valor.truncate().toString();
     }
-    return valor.toStringAsFixed(3).replaceAll(RegExp(r'0+$'), '').replaceAll(RegExp(r'\.$'), '');
+    return valor
+        .toStringAsFixed(3)
+        .replaceAll(RegExp(r'0+$'), '')
+        .replaceAll(RegExp(r'\.$'), '');
   }
 }

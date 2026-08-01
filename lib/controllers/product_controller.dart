@@ -63,6 +63,7 @@ class ProductController {
   Future<void> addProduct({
     required String nome,
     required int categoriaId,
+    String? volume,
   }) async {
     isLoading.value = true;
     error.value = null;
@@ -70,6 +71,7 @@ class ProductController {
       final prod = ProductModel(
         nome: nome,
         categoriaId: categoriaId,
+        volume: volume?.trim().isEmpty == true ? null : volume?.trim(),
       );
       await _productRepository.insert(prod);
       await loadProducts();
@@ -88,7 +90,9 @@ class ProductController {
     );
     if (existing.isNotEmpty) return existing.first;
 
-    final id = await _categoryRepository.insert(CategoryModel(nome: nome.trim()));
+    final id = await _categoryRepository.insert(
+      CategoryModel(nome: nome.trim()),
+    );
     await loadCategories();
     return categories.value.firstWhere((c) => c.id == id);
   }
