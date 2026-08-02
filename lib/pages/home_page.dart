@@ -1,5 +1,10 @@
+import 'dart:io';
 import 'package:armazem/pages/armazem_page.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:signals_flutter/signals_flutter.dart';
+import 'package:window_manager/window_manager.dart';
+import '../controllers/backup_controller.dart';
 import '../core/locator/locator.dart';
 import '../controllers/settings_controller.dart';
 import 'categories/categories_page.dart';
@@ -16,10 +21,11 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomePageState extends State<HomePage> with WindowListener {
   int _selectedIndex = 0;
 
   final _settingsController = locator<SettingsController>();
+  final _backupController = locator<BackupController>();
 
   final List<Widget> _pages = [
     const ArmazemPage(),
@@ -73,10 +79,117 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
+    windowManager.addListener(this);
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       await _settingsController.load();
     });
+  }
+
+  @override
+  void dispose() {
+    windowManager.removeListener(this);
+    super.dispose();
+  }
+
+  @override
+  void onWindowClose() {
+    if (!mounted) return;
+    _confirmarSaida(context, fecharAposBackup: true);
+  }
+
+  Future<void> _confirmarSaida(
+    BuildContext context, {
+    bool fecharAposBackup = true,
+  }) async {
+    final messenger = ScaffoldMessenger.of(context);
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text('Finalizando aplicativo'),
+          content: SizedBox(
+            width: 320,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  'Criando backup automático antes de fechar o app.',
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 16),
+                SignalBuilder(
+                  builder: (context) {
+                    final loading = _backupController.isLoading.value;
+                    final progress = _backupController.progress.value;
+                    final message = _backupController.statusMessage.value;
+                    final error = _backupController.isError.value;
+
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        LinearProgressIndicator(
+                          value: progress,
+                          minHeight: 8,
+                          backgroundColor: Theme.of(
+                            context,
+                          ).colorScheme.surfaceContainerHighest,
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          loading
+                              ? (progress != null
+                                    ? '${(progress * 100).toInt()}% — Processando...'
+                                    : 'Processando...')
+                              : (message ?? 'Finalizando...'),
+                          style: TextStyle(
+                            color: error
+                                ? Colors.red
+                                : Theme.of(context).colorScheme.primary,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+
+    try {
+      await _backupController.exportBackup(automatico: true);
+      if (!mounted) return;
+      await Future.delayed(const Duration(milliseconds: 600));
+      if (!mounted) return;
+      Navigator.of(context, rootNavigator: true).pop();
+      if (fecharAposBackup) {
+        _fecharAplicativo();
+      }
+    } catch (e) {
+      if (!mounted) return;
+      Navigator.of(context, rootNavigator: true).pop();
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text('Não foi possível concluir o backup ao sair: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      _fecharAplicativo();
+    }
+  }
+
+  void _fecharAplicativo() {
+    if (Platform.isAndroid || Platform.isIOS) {
+      SystemNavigator.pop();
+    } else {
+      exit(0);
+    }
   }
 
   @override
@@ -86,7 +199,17 @@ class _HomePageState extends State<HomePage> {
 
     return Scaffold(
       appBar: !isDesktop
-          ? AppBar(title: const Text('Almoxarifado'), elevation: 2)
+          ? AppBar(
+              title: const Text('Almoxarifado'),
+              elevation: 2,
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.exit_to_app),
+                  tooltip: 'Sair',
+                  onPressed: () => _confirmarSaida(context),
+                ),
+              ],
+            )
           : null,
       drawer: !isDesktop
           ? Drawer(
@@ -132,6 +255,15 @@ class _HomePageState extends State<HomePage> {
                       },
                     );
                   }),
+                  const Divider(),
+                  ListTile(
+                    leading: const Icon(Icons.exit_to_app),
+                    title: const Text('Sair'),
+                    onTap: () {
+                      Navigator.pop(context);
+                      _confirmarSaida(context);
+                    },
+                  ),
                 ],
               ),
             )
