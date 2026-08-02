@@ -34,7 +34,7 @@ class ProductRepository {
         ) - COALESCE(
           (SELECT SUM(m.quantity) FROM movements m 
            WHERE m.product_id = p.id AND m.type = 'SAIDA'), 0.0
-        ) AS saldo,
+        ) AS balance,
         (SELECT m2.unit_of_measurement FROM movements m2 
          WHERE m2.product_id = p.id AND m2.type = 'ENTRADA'
          ORDER BY m2.data_entry DESC LIMIT 1) AS unit_of_measurement
@@ -82,7 +82,7 @@ class ProductRepository {
         ) - COALESCE(
           (SELECT SUM(m.quantity) FROM movements m 
            WHERE m.product_id = p.id AND m.type = 'SAIDA'), 0.0
-        ) AS saldo,
+        ) AS balance,
         (SELECT m2.unit_of_measurement FROM movements m2 
          WHERE m2.product_id = p.id AND m2.type = 'ENTRADA'
          ORDER BY m2.data_entry DESC LIMIT 1) AS unit_of_measurement
