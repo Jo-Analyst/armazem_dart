@@ -1,17 +1,18 @@
 import 'package:armazem/models/movement_model.dart';
 import 'package:armazem/models/product_model.dart';
+import 'package:armazem/pages/about/about_page.dart';
 import 'package:armazem/pages/armazem_page.dart';
 import 'package:armazem/pages/splash/splash_page.dart';
 import 'package:flutter/material.dart';
-import '../../pages/backup/backup_page.dart';
-import '../../pages/categories/categories_page.dart';
-import '../../pages/home_page.dart';
-import '../../pages/movements/movement_form_page.dart';
-import '../../pages/movements/movements_page.dart';
-import '../../pages/products/product_form_page.dart';
-import '../../pages/products/products_page.dart';
-import '../../pages/reports/reports_page.dart';
-import '../../pages/settings/settings_page.dart';
+import 'package:armazem/pages/backup/backup_page.dart';
+import 'package:armazem/pages/categories/categories_page.dart';
+import 'package:armazem/pages/home_page.dart';
+import 'package:armazem/pages/movements/movement_form_page.dart';
+import 'package:armazem/pages/movements/movements_page.dart';
+import 'package:armazem/pages/products/product_form_page.dart';
+import 'package:armazem/pages/products/products_page.dart';
+import 'package:armazem/pages/reports/reports_page.dart';
+import 'package:armazem/pages/settings/settings_page.dart';
 
 class AppRoutes {
   static const home = '/';
@@ -25,6 +26,7 @@ class AppRoutes {
   static const backup = '/backup';
   static const settings = '/settings';
   static const splash = '/splash';
+  static const about = '/about';
 
   static final Map<String, WidgetBuilder> routes = {
     home: (_) => const HomePage(),
@@ -36,6 +38,7 @@ class AppRoutes {
     backup: (_) => const BackupPage(),
     settings: (_) => const SettingsPage(),
     splash: (_) => const SplashPage(),
+    about: (_) => const AboutPage(),
   };
 
   static Route<T> onGenerateRoute<T>(RouteSettings settings) {

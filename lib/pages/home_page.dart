@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:armazem/pages/about/about_page.dart';
 import 'package:armazem/pages/armazem_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -34,6 +35,7 @@ class _HomePageState extends State<HomePage> with WindowListener {
     const MovementsPage(),
     const ReportsPage(),
     const BackupPage(),
+    const AboutPage(),
     const SettingsPage(),
   ];
 
@@ -68,6 +70,11 @@ class _HomePageState extends State<HomePage> with WindowListener {
       icon: Icon(Icons.backup_outlined),
       selectedIcon: Icon(Icons.backup),
       label: 'Backup',
+    ),
+    NavigationDestination(
+      icon: Icon(Icons.info_outline),
+      selectedIcon: Icon(Icons.info),
+      label: 'Sobre',
     ),
     NavigationDestination(
       icon: Icon(Icons.settings_outlined),
