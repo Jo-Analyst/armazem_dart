@@ -115,8 +115,13 @@ class _HomePageState extends State<HomePage> with WindowListener {
       context: context,
       barrierDismissible: false,
       builder: (dialogContext) {
+        final hasPendingBackup =
+            _backupController.isLoading.value ||
+            _backupController.progress.value != null ||
+            _backupController.statusMessage.value != null ||
+            _backupController.isError.value;
         return AlertDialog(
-          title: const Text('Finalizando aplicativo'),
+          title: hasPendingBackup ? const Text('Finalizando aplicativo') : null,
           content: SizedBox(
             width: 320,
             child: Column(
@@ -124,17 +129,11 @@ class _HomePageState extends State<HomePage> with WindowListener {
               children: [
                 SignalBuilder(
                   builder: (context) {
-                    final hasPendingBackup =
-                        _backupController.isLoading.value ||
-                        _backupController.progress.value != null ||
-                        _backupController.statusMessage.value != null ||
-                        _backupController.isError.value;
-
                     if (!hasPendingBackup) {
                       return const Padding(
                         padding: EdgeInsets.only(top: 8),
                         child: Text(
-                          'Carregando o fechamento...',
+                          'Finalizando...',
                           textAlign: TextAlign.center,
                         ),
                       );
