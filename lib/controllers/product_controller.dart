@@ -1,4 +1,5 @@
 import 'package:signals_flutter/signals_flutter.dart';
+import '../core/database/change_tracker.dart';
 import '../models/product_model.dart';
 import '../models/category_model.dart';
 import '../repositories/product_repository.dart';
@@ -7,6 +8,7 @@ import '../repositories/category_repository.dart';
 class ProductController {
   final ProductRepository _productRepository;
   final CategoryRepository _categoryRepository;
+  final DatabaseChangeTracker _changeTracker = DatabaseChangeTracker();
 
   ProductController(this._productRepository, this._categoryRepository);
 
@@ -74,6 +76,7 @@ class ProductController {
         volume: volume?.trim().isEmpty == true ? null : volume?.trim(),
       );
       await _productRepository.insert(prod);
+      _changeTracker.markChanged();
       await loadProducts();
     } catch (e) {
       error.value = e.toString();
@@ -93,6 +96,7 @@ class ProductController {
     final id = await _categoryRepository.insert(
       CategoryModel(name: name.trim()),
     );
+    _changeTracker.markChanged();
     await loadCategories();
     return categories.value.firstWhere((c) => c.id == id);
   }
@@ -102,6 +106,7 @@ class ProductController {
     error.value = null;
     try {
       await _productRepository.update(product);
+      _changeTracker.markChanged();
       await loadProducts();
     } catch (e) {
       error.value = e.toString();
@@ -116,6 +121,7 @@ class ProductController {
     error.value = null;
     try {
       await _productRepository.delete(id);
+      _changeTracker.markChanged();
       await loadProducts();
     } catch (e) {
       error.value = e.toString();

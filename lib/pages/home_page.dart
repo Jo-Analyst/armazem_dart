@@ -163,7 +163,7 @@ class _HomePageState extends State<HomePage> with WindowListener {
     );
 
     try {
-      await _backupController.exportBackup(automatico: true);
+      await _backupController.executarBackupSeHouverMudanca();
       if (!mounted) return;
       await Future.delayed(const Duration(milliseconds: 600));
       if (!mounted) return;

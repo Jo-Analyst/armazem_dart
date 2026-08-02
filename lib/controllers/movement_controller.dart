@@ -1,4 +1,5 @@
 import 'package:signals_flutter/signals_flutter.dart';
+import '../core/database/change_tracker.dart';
 import '../models/movement_model.dart';
 import '../models/product_model.dart';
 import '../repositories/movement_repository.dart';
@@ -7,6 +8,7 @@ import '../repositories/product_repository.dart';
 class MovementController {
   final MovementRepository _movementRepository;
   final ProductRepository _productRepository;
+  final DatabaseChangeTracker _changeTracker = DatabaseChangeTracker();
 
   MovementController(this._movementRepository, this._productRepository);
 
@@ -82,6 +84,7 @@ class MovementController {
       );
 
       await _movementRepository.createMovement(mov);
+      _changeTracker.markChanged();
       await loadMovements();
       await loadProducts(); // Atualiza saldo exibido nos produtos
     } catch (e) {
@@ -120,6 +123,7 @@ class MovementController {
       }
 
       await _movementRepository.update(movement);
+      _changeTracker.markChanged();
       await loadMovements();
       await loadProducts(); // Atualiza saldo exibido nos produtos
     } catch (e) {
@@ -136,6 +140,7 @@ class MovementController {
     error.value = null;
     try {
       await _movementRepository.delete(id);
+      _changeTracker.markChanged();
       await loadMovements();
       await loadProducts(); // Atualiza saldo exibido nos produtos
     } catch (e) {

@@ -4,6 +4,7 @@ import 'package:armazem/controllers/movement_controller.dart';
 import 'package:armazem/controllers/product_controller.dart';
 import 'package:armazem/controllers/report_controller.dart';
 import 'package:armazem/controllers/settings_controller.dart';
+import 'package:armazem/core/database/change_tracker.dart';
 import 'package:armazem/core/database/database_helper.dart';
 import 'package:armazem/repositories/backup_repository.dart';
 import 'package:armazem/repositories/category_repository.dart';
@@ -16,6 +17,9 @@ final locator = GetIt.instance;
 void setupLocator() {
   // Database Helper (Singleton — uma única instância durante todo o ciclo de vida)
   locator.registerSingleton<DatabaseHelper>(DatabaseHelper());
+  locator.registerLazySingleton<DatabaseChangeTracker>(
+    () => DatabaseChangeTracker(),
+  );
 
   // Repositories
   locator.registerLazySingleton<CategoryRepository>(
