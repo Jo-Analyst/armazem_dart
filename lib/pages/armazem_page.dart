@@ -44,7 +44,11 @@ class ArmazemPage extends StatelessWidget {
                         Icon(Icons.lightbulb, color: Colors.orange),
                         Text(
                           'Ações rápidas:',
-                          style: TextStyle(fontSize: 16, color: Colors.white),
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.white,
+                            fontWeight: FontWeight.w800,
+                          ),
                         ),
                       ],
                     ),

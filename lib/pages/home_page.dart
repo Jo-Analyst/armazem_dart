@@ -115,13 +115,24 @@ class _HomePageState extends State<HomePage> with WindowListener {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text(
-                  'Criando backup automático antes de fechar o app.',
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 16),
                 SignalBuilder(
                   builder: (context) {
+                    final hasPendingBackup =
+                        _backupController.isLoading.value ||
+                        _backupController.progress.value != null ||
+                        _backupController.statusMessage.value != null ||
+                        _backupController.isError.value;
+
+                    if (!hasPendingBackup) {
+                      return const Padding(
+                        padding: EdgeInsets.only(top: 8),
+                        child: Text(
+                          'Carregando o fechamento...',
+                          textAlign: TextAlign.center,
+                        ),
+                      );
+                    }
+
                     final loading = _backupController.isLoading.value;
                     final progress = _backupController.progress.value;
                     final message = _backupController.statusMessage.value;
@@ -130,6 +141,11 @@ class _HomePageState extends State<HomePage> with WindowListener {
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        const Text(
+                          'Criando backup automático antes de fechar o app.',
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 16),
                         LinearProgressIndicator(
                           value: progress,
                           minHeight: 8,
