@@ -1,7 +1,6 @@
 import 'package:armazem/pages/armazem_page.dart';
 import 'package:flutter/material.dart';
 import '../core/locator/locator.dart';
-import '../controllers/backup_controller.dart';
 import '../controllers/settings_controller.dart';
 import 'categories/categories_page.dart';
 import 'products/products_page.dart';
@@ -19,9 +18,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
-  late final AppLifecycleListener _lifecycleListener;
 
-  final _backupController = locator<BackupController>();
   final _settingsController = locator<SettingsController>();
 
   final List<Widget> _pages = [
@@ -80,26 +77,6 @@ class _HomePageState extends State<HomePage> {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       await _settingsController.load();
     });
-
-    // Backup automático ao pausar/fechar o aplicativo
-    _lifecycleListener = AppLifecycleListener(
-      onPause: _executarBackupAutomatico,
-      onDetach: _executarBackupAutomatico,
-    );
-  }
-
-  @override
-  void dispose() {
-    _lifecycleListener.dispose();
-    super.dispose();
-  }
-
-  Future<void> _executarBackupAutomatico() async {
-    try {
-      await _backupController.exportBackup(automatico: true);
-    } catch (_) {
-      // Backup automático falha silenciosamente — não interrompe o fechamento
-    }
   }
 
   @override

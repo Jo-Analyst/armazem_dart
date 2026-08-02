@@ -68,7 +68,7 @@ class _BackupPageState extends State<BackupPage> {
                         const SizedBox(height: 8),
                         const Text(
                           'Exporte ou restaure os dados do almoxarifado. '
-                          'O backup automático é acionado ao fechar o aplicativo.',
+                          'O backup é gerado ao clicar em Exportar ou ao sair do aplicativo.',
                           textAlign: TextAlign.center,
                           style: TextStyle(color: Colors.grey),
                         ),
