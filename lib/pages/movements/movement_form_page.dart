@@ -568,10 +568,19 @@ class _MovementFormPageState extends State<MovementFormPage> {
               TextFormField(
                 controller: _obsController,
                 maxLines: 3,
-                decoration: const InputDecoration(
-                  labelText: 'Observação (opcional)',
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  labelText: _selectedType == 'SAIDA'
+                      ? 'Observação *'
+                      : 'Observação (opcional)',
+                  border: const OutlineInputBorder(),
                 ),
+                validator: (val) {
+                  if (_selectedType == 'SAIDA' &&
+                      (val == null || val.trim().isEmpty)) {
+                    return 'Observação obrigatória para saída';
+                  }
+                  return null;
+                },
               ),
 
               const SizedBox(height: 24),
