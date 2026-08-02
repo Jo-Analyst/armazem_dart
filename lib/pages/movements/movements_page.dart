@@ -155,7 +155,7 @@ class _MovementsPageState extends State<MovementsPage> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(
-                    Icons.swap_horiz_outlined,
+                    Icons.move_down_outlined,
                     size: 64,
                     color: theme.hintColor,
                   ),
