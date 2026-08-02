@@ -42,19 +42,14 @@ class DatabaseHelper {
   }
 
   Future _onUpgrade(Database db, int oldVersion, int newVersion) async {
-    if (oldVersion < 3) {
-      // Adicionar coluna volume na tabela produtos
-      await db.execute('ALTER TABLE produtos ADD COLUMN volume TEXT');
-    }
-
-    if (oldVersion < 2) {
+      if (oldVersion < 2) {
       // Migração destrutiva: apaga e recria as tabelas com o novo esquema.
       // Necessário pois a estrutura de produtos e movimentacoes mudou de forma
-      // incompatível (remoção de campos em produtos, adição/renomeação em movimentacoes).
+      // incompatível (remoção de campos em produtos, adição/renameação em movimentacoes).
       await db.execute('PRAGMA foreign_keys = OFF');
-      await db.execute('DROP TABLE IF EXISTS movimentacoes');
-      await db.execute('DROP TABLE IF EXISTS produtos');
-      await db.execute('DROP TABLE IF EXISTS categorias');
+      await db.execute('DROP TABLE IF EXISTS movements');
+      await db.execute('DROP TABLE IF EXISTS products');
+      await db.execute('DROP TABLE IF EXISTS categories');
       await db.execute('PRAGMA foreign_keys = ON');
       await _createTables(db);
     }
@@ -63,35 +58,35 @@ class DatabaseHelper {
   Future<void> _createTables(Database db) async {
     // Categorias — id sem AUTOINCREMENT conforme especificação
     await db.execute('''
-      CREATE TABLE categorias (
+      CREATE TABLE categories (
         id INTEGER PRIMARY KEY,
-        nome TEXT NOT NULL UNIQUE
+        name TEXT NOT NULL UNIQUE
       )
     ''');
 
-    // Produtos — sem quantidade nem unidade_medida (saldo é dinâmico)
+    // Produtos — sem quantity nem unit_of_measurement (saldo é dinâmico)
     await db.execute('''
-      CREATE TABLE produtos (
+      CREATE TABLE products (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        nome TEXT NOT NULL,
-        categoria_id INTEGER NOT NULL,
+        name TEXT NOT NULL,
+        category_id INTEGER NOT NULL,
         volume TEXT,
-        FOREIGN KEY (categoria_id) REFERENCES categorias (id) ON DELETE CASCADE
+        FOREIGN KEY (category_id) REFERENCES categories (id) ON DELETE CASCADE
       )
     ''');
 
-    // Movimentações — data_entrada, data_saida e unidade_medida obrigatórios/opcionais
+    // Movimentações — data_entry, data_exit e unit_of_measurement obrigatórios/opcionais
     await db.execute('''
-      CREATE TABLE movimentacoes (
+      CREATE TABLE movements (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        produto_id INTEGER NOT NULL,
-        tipo TEXT NOT NULL,
-        quantidade REAL NOT NULL,
-        unidade_medida TEXT NOT NULL,
-        data_entrada TEXT,
-        data_saida TEXT,
-        observacao TEXT,
-        FOREIGN KEY (produto_id) REFERENCES produtos (id) ON DELETE CASCADE
+        product_id INTEGER NOT NULL,
+        type TEXT NOT NULL,
+        quantity REAL NOT NULL,
+        unit_of_measurement TEXT NOT NULL,
+        data_entry TEXT,
+        data_exit TEXT,
+        observation TEXT,
+        FOREIGN KEY (product_id) REFERENCES products (id) ON DELETE CASCADE
       )
     ''');
   }

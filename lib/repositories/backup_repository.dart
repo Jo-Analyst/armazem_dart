@@ -67,8 +67,8 @@ class BackupRepository {
     if (!await dir.exists()) {
       await dir.create(recursive: true);
     }
-    final nomeArquivo = p.basename(arquivoOrigem);
-    final destino = p.join(destinoDir, nomeArquivo);
+    final nameArquivo = p.basename(arquivoOrigem);
+    final destino = p.join(destinoDir, nameArquivo);
     await File(arquivoOrigem).copy(destino);
     return destino;
   }
@@ -117,14 +117,14 @@ class BackupRepository {
       allowInsecure: !ssl,
     );
 
-    final nomeArquivo = p.basename(arquivoPath);
+    final nameArquivo = p.basename(arquivoPath);
     final message = Message()
       ..from = Address(smtpUser, 'Controle de Almoxarifado')
       ..recipients.add(emailDestino)
       ..subject = 'Backup Almoxarifado — ${DateTime.now().toLocal()}'
       ..text =
           'Backup automático do sistema de Controle de Almoxarifado.\n'
-          'Arquivo: $nomeArquivo\n'
+          'Arquivo: $nameArquivo\n'
           'Data: ${DateTime.now().toLocal()}'
       ..attachments = [
         FileAttachment(File(arquivoPath))..location = Location.attachment,

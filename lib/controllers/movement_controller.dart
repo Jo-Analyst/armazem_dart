@@ -43,27 +43,27 @@ class MovementController {
   }
 
   /// Verifica o saldo atual de um produto antes de permitir SAIDA na UI
-  Future<double> getSaldoProduto(int produtoId) async {
-    return await _movementRepository.getSaldoProduto(produtoId);
+  Future<double> getSaldoProduto(int productId) async {
+    return await _movementRepository.getSaldoProduto(productId);
   }
 
   /// Registra uma nova movimentação com todas as validações de negócio.
   /// Lança [Exception] em caso de violação de regras.
   Future<void> registerMovement({
-    required int produtoId,
-    required String tipo,
-    required double quantidade,
-    required String unidadeMedida,
-    required String dataEntrada,
-    String? dataSaida,
-    String? observacao,
+    required int productId,
+    required String type,
+    required double quantity,
+    required String unitOfMeasurement,
+    required String dataEntry,
+    String? dataExit,
+    String? observation,
   }) async {
     isLoading.value = true;
     error.value = null;
     try {
       // Validação prévia de saldo na UI (antes de chegar ao repositório)
-      if (tipo == 'SAIDA') {
-        final saldo = await getSaldoProduto(produtoId);
+      if (type == 'SAIDA') {
+        final saldo = await getSaldoProduto(productId);
         if (saldo <= 0) {
           throw Exception(
             'Saldo zerado. Registre uma nova ENTRADA antes de registrar saída.',
@@ -72,13 +72,13 @@ class MovementController {
       }
 
       final mov = MovementModel(
-        produtoId: produtoId,
-        tipo: tipo,
-        quantidade: quantidade,
-        unidadeMedida: unidadeMedida,
-        dataEntrada: dataEntrada,
-        dataSaida: dataSaida,
-        observacao: observacao,
+        productId: productId,
+        type: type,
+        quantity: quantity,
+        unitOfMeasurement: unitOfMeasurement,
+        dataEntry: dataEntry,
+        dataExit: dataExit,
+        observation: observation,
       );
 
       await _movementRepository.createMovement(mov);
@@ -103,14 +103,14 @@ class MovementController {
       }
 
       // Validação prévia de saldo na UI (antes de chegar ao repositório)
-      if (movement.tipo == 'SAIDA') {
-        final saldo = await getSaldoProduto(movement.produtoId);
+      if (movement.type == 'SAIDA') {
+        final saldo = await getSaldoProduto(movement.productId);
         final movAtual = movements.value
             .where((m) => m.id == movement.id)
             .firstOrNull;
         double saldoDisponivel = saldo;
-        if (movAtual != null && movAtual.tipo == 'SAIDA') {
-          saldoDisponivel += movAtual.quantidade;
+        if (movAtual != null && movAtual.type == 'SAIDA') {
+          saldoDisponivel += movAtual.quantity;
         }
         if (saldoDisponivel <= 0) {
           throw Exception(

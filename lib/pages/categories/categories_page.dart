@@ -32,7 +32,7 @@ class _CategoriesPageState extends State<CategoriesPage> {
   }
 
   void _showAddEditDialog([CategoryModel? category]) {
-    _nameController.text = category?.nome ?? '';
+    _nameController.text = category?.name ?? '';
 
     showDialog(
       context: context,
@@ -69,7 +69,7 @@ class _CategoriesPageState extends State<CategoriesPage> {
                   ),
                   validator: (val) {
                     if (val == null || val.trim().isEmpty) {
-                      return 'Por favor, insira o nome';
+                      return 'Por favor, insira o name';
                     }
                     return null;
                   },
@@ -93,7 +93,7 @@ class _CategoriesPageState extends State<CategoriesPage> {
                           await _controller.editCategory(
                             CategoryModel(
                               id: category.id,
-                              nome: _nameController.text,
+                              name: _nameController.text,
                             ),
                           );
                         }
@@ -139,7 +139,7 @@ class _CategoriesPageState extends State<CategoriesPage> {
         return AlertDialog(
           title: const Text('Excluir Categoria'),
           content: Text(
-            'Deseja realmente excluir a categoria "${category.nome}"?',
+            'Deseja realmente excluir a categoria "${category.name}"?',
           ),
           actions: [
             TextButton(
@@ -284,7 +284,7 @@ class _CategoriesPageState extends State<CategoriesPage> {
                     child: Icon(Icons.category_outlined),
                   ),
                   title: Text(
-                    cat.nome,
+                    cat.name,
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       color: _selectedCategory?.id == cat.id

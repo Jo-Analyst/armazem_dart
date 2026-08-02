@@ -25,8 +25,8 @@ class _MovementFormPageState extends State<MovementFormPage> {
   ProductModel? _selectedProduct;
   String _selectedType = 'ENTRADA';
   String _selectedUnit = 'UN';
-  DateTime? _dataEntrada;
-  DateTime? _dataSaida;
+  DateTime? _dataEntry;
+  DateTime? _dataExit;
   double _saldoAtual = 0.0;
   bool _isLoading = false;
 
@@ -37,22 +37,22 @@ class _MovementFormPageState extends State<MovementFormPage> {
     super.initState();
     final isEditing = widget.movement != null;
 
-    // Listener para re-renderizar ao digitar na quantidade (controla a visibilidade do ícone de limpar)
+    // Listener para re-renderizar ao digitar na quantity (controla a visibilidade do ícone de limpar)
     _quantityController.addListener(() {
       if (mounted) setState(() {});
     });
 
     if (isEditing) {
-      _quantityController.text = widget.movement!.quantidade
+      _quantityController.text = widget.movement!.quantity
           .toString()
           .replaceAll('.', ',');
-      _obsController.text = widget.movement!.observacao ?? '';
-      _selectedType = widget.movement!.tipo;
-      _selectedUnit = widget.movement!.unidadeMedida;
-      _dataEntrada = widget.movement!.dataEntrada.isNotEmpty
-          ? DateTime.tryParse(widget.movement!.dataEntrada)
+      _obsController.text = widget.movement!.observation ?? '';
+      _selectedType = widget.movement!.type;
+      _selectedUnit = widget.movement!.unitOfMeasurement;
+      _dataEntry = widget.movement!.dataEntry.isNotEmpty
+          ? DateTime.tryParse(widget.movement!.dataEntry)
           : null;
-      _dataSaida = DateTime.tryParse(widget.movement!.dataSaida ?? '');
+      _dataExit = DateTime.tryParse(widget.movement!.dataExit ?? '');
     }
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
@@ -60,7 +60,7 @@ class _MovementFormPageState extends State<MovementFormPage> {
 
       if (isEditing) {
         final prod = _controller.products.value
-            .where((p) => p.id == widget.movement!.produtoId)
+            .where((p) => p.id == widget.movement!.productId)
             .firstOrNull;
 
         if (prod != null) {
@@ -75,7 +75,7 @@ class _MovementFormPageState extends State<MovementFormPage> {
           _selectedProduct = _controller.products.value.isNotEmpty
               ? _controller.products.value.first
               : null;
-          _dataEntrada = DateTime.now();
+          _dataEntry = DateTime.now();
         });
         if (_selectedProduct != null) {
           await _atualizarSaldo(_selectedProduct);
@@ -118,10 +118,10 @@ class _MovementFormPageState extends State<MovementFormPage> {
   Future<void> _saveMovement() async {
     if (!_formKey.currentState!.validate()) return;
 
-    // Validar quantidade antes de converter
-    final quantidadeText = _quantityController.text.trim().replaceAll(',', '.');
-    final quantidade = double.tryParse(quantidadeText);
-    if (quantidade == null || quantidade <= 0) {
+    // Validar quantity antes de converter
+    final quantityText = _quantityController.text.trim().replaceAll(',', '.');
+    final quantity = double.tryParse(quantityText);
+    if (quantity == null || quantity <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Quantidade inválida'),
@@ -136,17 +136,17 @@ class _MovementFormPageState extends State<MovementFormPage> {
     try {
       if (widget.movement == null) {
         await _controller.registerMovement(
-          produtoId: _selectedProduct!.id!,
-          tipo: _selectedType,
-          quantidade: quantidade,
-          unidadeMedida: _selectedUnit,
-          dataEntrada: _selectedType.toUpperCase() == 'ENTRADA'
-              ? _dataEntrada!.toIso8601String()
+          productId: _selectedProduct!.id!,
+          type: _selectedType,
+          quantity: quantity,
+          unitOfMeasurement: _selectedUnit,
+          dataEntry: _selectedType.toUpperCase() == 'ENTRADA'
+              ? _dataEntry!.toIso8601String()
               : '',
-          dataSaida: _selectedType == 'SAIDA'
-              ? (_dataSaida?.toIso8601String() ?? '')
+          dataExit: _selectedType == 'SAIDA'
+              ? (_dataExit?.toIso8601String() ?? '')
               : '',
-          observacao: _obsController.text.trim().isEmpty
+          observation: _obsController.text.trim().isEmpty
               ? null
               : _obsController.text.trim(),
         );
@@ -154,17 +154,17 @@ class _MovementFormPageState extends State<MovementFormPage> {
         await _controller.updateMovement(
           MovementModel(
             id: widget.movement!.id,
-            produtoId: _selectedProduct!.id!,
-            tipo: _selectedType,
-            quantidade: quantidade,
-            unidadeMedida: _selectedUnit,
-            dataEntrada: _selectedType.toUpperCase() == 'ENTRADA'
-                ? _dataEntrada!.toIso8601String()
+            productId: _selectedProduct!.id!,
+            type: _selectedType,
+            quantity: quantity,
+            unitOfMeasurement: _selectedUnit,
+            dataEntry: _selectedType.toUpperCase() == 'ENTRADA'
+                ? _dataEntry!.toIso8601String()
                 : '',
-            dataSaida: _selectedType.toUpperCase() == 'SAIDA'
-                ? (_dataSaida?.toIso8601String() ?? '')
+            dataExit: _selectedType.toUpperCase() == 'SAIDA'
+                ? (_dataExit?.toIso8601String() ?? '')
                 : '',
-            observacao: _obsController.text.trim().isEmpty
+            observation: _obsController.text.trim().isEmpty
                 ? null
                 : _obsController.text.trim(),
           ),
@@ -225,20 +225,20 @@ class _MovementFormPageState extends State<MovementFormPage> {
                   return Autocomplete<ProductModel>(
                     key: ValueKey(_selectedProduct?.id ?? 'novo_produto'),
                     initialValue: TextEditingValue(
-                      text: _selectedProduct?.nome ?? '',
+                      text: _selectedProduct?.description ?? '',
                     ),
                     optionsBuilder: (TextEditingValue textEditingValue) {
                       if (textEditingValue.text.isEmpty) {
                         return productList;
                       }
                       return productList.where((ProductModel option) {
-                        return option.nome.toLowerCase().contains(
+                        return option.description!.toLowerCase().contains(
                           textEditingValue.text.toLowerCase(),
                         );
                       });
                     },
                     displayStringForOption: (ProductModel option) =>
-                        option.nome,
+                        option.description!,
                     fieldViewBuilder:
                         (
                           context,
@@ -248,7 +248,7 @@ class _MovementFormPageState extends State<MovementFormPage> {
                         ) {
                           if (textEditingController.text.isEmpty &&
                               _selectedProduct != null) {
-                            textEditingController.text = _selectedProduct!.nome;
+                            textEditingController.text = _selectedProduct!.name;
                           }
 
                           final hasValue =
@@ -327,7 +327,7 @@ class _MovementFormPageState extends State<MovementFormPage> {
                       ),
                       const SizedBox(width: 6),
                       Text(
-                        'Saldo atual: ${_selectedProduct!.saldoFormatado}',
+                        'Saldo atual: ${_selectedProduct!.balanceFormatado}',
                         style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
@@ -366,11 +366,11 @@ class _MovementFormPageState extends State<MovementFormPage> {
                     setState(() {
                       _selectedType = val;
                       if (val == 'ENTRADA') {
-                        _dataSaida = null;
-                        _dataEntrada = DateTime.now();
+                        _dataExit = null;
+                        _dataEntry = DateTime.now();
                       } else if (val == 'SAIDA') {
-                        _dataEntrada = null;
-                        _dataSaida = DateTime.now();
+                        _dataEntry = null;
+                        _dataExit = DateTime.now();
                       }
                     });
                   }
@@ -436,7 +436,7 @@ class _MovementFormPageState extends State<MovementFormPage> {
                       ),
                       validator: (val) {
                         if (val == null || val.trim().isEmpty) {
-                          return 'Informe a quantidade';
+                          return 'Informe a quantity';
                         }
                         // Substitui vírgula por ponto para o double.tryParse não falhar
                         final normalizedVal = val.replaceAll(',', '.');
@@ -487,10 +487,10 @@ class _MovementFormPageState extends State<MovementFormPage> {
                     if (_selectedType == 'SAIDA') return;
                     final picked = await _pickDate(
                       context,
-                      initial: _dataEntrada ?? DateTime.now(),
+                      initial: _dataEntry ?? DateTime.now(),
                     );
                     if (picked != null) {
-                      setState(() => _dataEntrada = picked);
+                      setState(() => _dataEntry = picked);
                     }
                   },
                   child: InputDecorator(
@@ -508,8 +508,8 @@ class _MovementFormPageState extends State<MovementFormPage> {
                     child: Text(
                       _selectedType == 'SAIDA'
                           ? 'Não aplicável'
-                          : _dataEntrada != null
-                          ? _dateFormat.format(_dataEntrada!)
+                          : _dataEntry != null
+                          ? _dateFormat.format(_dataEntry!)
                           : 'Selecione a data',
                       style: _selectedType == 'SAIDA'
                           ? TextStyle(color: Colors.grey.shade500)
@@ -529,11 +529,11 @@ class _MovementFormPageState extends State<MovementFormPage> {
                     if (_selectedType == 'ENTRADA') return;
                     final picked = await _pickDate(
                       context,
-                      initial: _dataSaida ?? _dataEntrada ?? DateTime.now(),
-                      firstDate: _dataEntrada ?? DateTime(2020),
+                      initial: _dataExit ?? _dataEntry ?? DateTime.now(),
+                      firstDate: _dataEntry ?? DateTime(2020),
                     );
                     if (picked != null) {
-                      setState(() => _dataSaida = picked);
+                      setState(() => _dataExit = picked);
                     }
                   },
                   child: InputDecorator(
@@ -551,8 +551,8 @@ class _MovementFormPageState extends State<MovementFormPage> {
                     child: Text(
                       _selectedType == 'ENTRADA'
                           ? 'Não aplicável'
-                          : _dataSaida != null
-                          ? _dateFormat.format(_dataSaida!)
+                          : _dataExit != null
+                          ? _dateFormat.format(_dataExit!)
                           : 'Selecione a data',
                       style: _selectedType == 'ENTRADA'
                           ? TextStyle(color: Colors.grey.shade500)

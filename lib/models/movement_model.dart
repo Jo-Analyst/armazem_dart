@@ -21,13 +21,13 @@ enum UnidadeMedida {
 
 class MovementModel {
   final int? id;
-  final int produtoId;
-  final String tipo; // 'ENTRADA' | 'SAIDA'
-  final double quantidade;
-  final String unidadeMedida; // KG, UN, PCT, MALA, FARDO, CX, LT, OUTROS
-  final String dataEntrada; // ISO8601 — obrigatória
-  final String? dataSaida; // ISO8601 — obrigatória apenas em SAIDA
-  final String? observacao;
+  final int productId;
+  final String type; // 'ENTRADA' | 'SAIDA'
+  final double quantity;
+  final String unitOfMeasurement; // KG, UN, PCT, MALA, FARDO, CX, LT, OUTROS
+  final String dataEntry; // ISO8601 — obrigatória
+  final String? dataExit; // ISO8601 — obrigatória apenas em SAIDA
+  final String? observation;
 
   // Campos de UI (via JOIN)
   final String? productName;
@@ -35,13 +35,13 @@ class MovementModel {
 
   MovementModel({
     this.id,
-    required this.produtoId,
-    required this.tipo,
-    required this.quantidade,
-    required this.unidadeMedida,
-    required this.dataEntrada,
-    this.dataSaida,
-    this.observacao,
+    required this.productId,
+    required this.type,
+    required this.quantity,
+    required this.unitOfMeasurement,
+    required this.dataEntry,
+    this.dataExit,
+    this.observation,
     this.productName,
     this.productVolume,
   });
@@ -49,37 +49,37 @@ class MovementModel {
   Map<String, dynamic> toMap() {
     return {
       if (id != null) 'id': id,
-      'produto_id': produtoId,
-      'tipo': tipo,
-      'quantidade': quantidade,
-      'unidade_medida': unidadeMedida,
-      'data_entrada': dataEntrada,
-      'data_saida': dataSaida,
-      'observacao': observacao,
+      'product_id': productId,
+      'type': type,
+      'quantity': quantity,
+      'unit_of_measurement': unitOfMeasurement,
+      'data_entry': dataEntry,
+      'data_exit': dataExit,
+      'observation': observation,
     };
   }
 
   factory MovementModel.fromMap(Map<String, dynamic> map) {
     return MovementModel(
       id: map['id'] as int?,
-      produtoId: map['produto_id'] as int,
-      tipo: map['tipo'] as String,
-      quantidade: (map['quantidade'] as num).toDouble(),
-      unidadeMedida: map['unidade_medida'] as String? ?? 'UN',
-      dataEntrada:
-          map['data_entrada'] as String? ??
+      productId: map['product_id'] as int,
+      type: map['type'] as String,
+      quantity: (map['quantity'] as num).toDouble(),
+      unitOfMeasurement: map['unit_of_measurement'] as String? ?? 'UN',
+      dataEntry:
+          map['data_entry'] as String? ??
           map['data'] as String? ??
           DateTime.now().toIso8601String(),
-      dataSaida: map['data_saida'] as String?,
-      observacao: map['observacao'] as String?,
+      dataExit: map['data_exit'] as String?,
+      observation: map['observation'] as String?,
       productName: map['product_name'] as String?,
       productVolume: map['product_volume'] as String?,
     );
   }
 
-  bool get isEntrada => tipo == 'ENTRADA';
-  bool get isSaida => tipo == 'SAIDA';
+  bool get isEntrada => type == 'ENTRADA';
+  bool get isSaida => type == 'SAIDA';
 
-  /// Formata a quantidade com unidade
-  String get quantidadeFormatada => '$quantidade $unidadeMedida';
+  /// Formata a quantity com unidade
+  String get quantityFormated => '$quantity $unitOfMeasurement';
 }

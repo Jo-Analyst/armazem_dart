@@ -41,8 +41,8 @@ class _ProductFormPageState extends State<ProductFormPage> {
     });
 
     if (isEditing) {
-      _nameController.text = widget.product!.nome;
-      _selectedCategoryId = widget.product!.categoriaId;
+      _nameController.text = widget.product!.name;
+      _selectedCategoryId = widget.product!.categoryId;
       _volumeController.text = widget.product!.volume ?? '';
     }
 
@@ -98,8 +98,8 @@ class _ProductFormPageState extends State<ProductFormPage> {
 
       if (widget.product == null) {
         await _controller.addProduct(
-          nome: _nameController.text.trim(),
-          categoriaId: _selectedCategoryId!,
+          name: _nameController.text.trim(),
+          categoryId: _selectedCategoryId!,
           volume: _volumeController.text.trim().isEmpty
               ? null
               : _volumeController.text.trim(),
@@ -108,8 +108,8 @@ class _ProductFormPageState extends State<ProductFormPage> {
         await _controller.editProduct(
           ProductModel(
             id: widget.product?.id ?? 0,
-            nome: _nameController.text.trim(),
-            categoriaId: _selectedCategoryId!,
+            name: _nameController.text.trim(),
+            categoryId: _selectedCategoryId!,
             volume: _volumeController.text.trim().isEmpty
                 ? null
                 : _volumeController.text.trim(),
@@ -171,7 +171,7 @@ class _ProductFormPageState extends State<ProductFormPage> {
                 ),
                 validator: (val) {
                   if (val == null || val.trim().isEmpty) {
-                    return 'Por favor, insira o nome';
+                    return 'Por favor, insira o name';
                   }
                   return null;
                 },
@@ -212,7 +212,7 @@ class _ProductFormPageState extends State<ProductFormPage> {
                             items: _controller.categories.value.map((cat) {
                               return DropdownMenuItem<int>(
                                 value: cat.id,
-                                child: Text(cat.nome),
+                                child: Text(cat.name),
                               );
                             }).toList(),
                             onChanged: (val) {
@@ -265,7 +265,7 @@ class _ProductFormPageState extends State<ProductFormPage> {
                         validator: (val) {
                           if (_addingNewCategory &&
                               (val == null || val.trim().isEmpty)) {
-                            return 'Informe o nome da categoria';
+                            return 'Informe o name da categoria';
                           }
                           return null;
                         },

@@ -39,7 +39,7 @@ class _ProductsPageState extends State<ProductsPage> {
         return AlertDialog(
           title: const Text('Excluir Produto'),
           content: Text(
-            'Deseja excluir "${product.nome}"?\n\n'
+            'Deseja excluir "${product.name}"?\n\n'
             'Todas as movimentações associadas também serão removidas.',
           ),
           actions: [
@@ -127,7 +127,7 @@ class _ProductsPageState extends State<ProductsPage> {
                       return TextField(
                         controller: _searchController,
                         decoration: InputDecoration(
-                          hintText: 'Buscar por nome...',
+                          hintText: 'Buscar por name...',
                           border: const OutlineInputBorder(),
                           suffixIcon: hasText
                               ? IconButton(
@@ -151,7 +151,7 @@ class _ProductsPageState extends State<ProductsPage> {
                   child: SignalBuilder(
                     builder: (context) {
                       return DropdownButtonFormField<int?>(
-                        value: _controller.categoryFilter.value,
+                        initialValue: _controller.categoryFilter.value,
                         decoration: const InputDecoration(
                           labelText: 'Categoria',
                           border: OutlineInputBorder(),
@@ -165,7 +165,7 @@ class _ProductsPageState extends State<ProductsPage> {
                           ..._controller.categories.value.map((cat) {
                             return DropdownMenuItem<int?>(
                               value: cat.id,
-                              child: Text(cat.nome),
+                              child: Text(cat.name),
                             );
                           }),
                         ],

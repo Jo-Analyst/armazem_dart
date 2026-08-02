@@ -24,12 +24,12 @@ class CategoryController {
     }
   }
 
-  Future<void> addCategory(String nome) async {
-    if (nome.trim().isEmpty) return;
+  Future<void> addCategory(String name) async {
+    if (name.trim().isEmpty) return;
     isLoading.value = true;
     error.value = null;
     try {
-      await _repository.insert(CategoryModel(nome: nome.trim()));
+      await _repository.insert(CategoryModel(name: name.trim()));
       await loadCategories();
     } catch (e) {
       error.value = e.toString();

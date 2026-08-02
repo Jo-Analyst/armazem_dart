@@ -8,46 +8,51 @@ class ProductRepository {
 
   Future<int> insert(ProductModel product) async {
     final db = await _dbHelper.database;
-    return await db.insert('produtos', product.toMap());
+    return await db.insert('products', product.toMap());
   }
 
   Future<List<ProductModel>> getAll({String? search, int? categoryId}) async {
     final db = await _dbHelper.database;
 
     // Saldo calculado dinamicamente como SUM(ENTRADA) - SUM(SAIDA)
-    // Unidade exibida = unidade_medida da movimentação de ENTRADA mais recente
+    // Unidade exibida = unit_of_measurement da movimentação de ENTRADA mais recente
     String query = '''
       SELECT 
         p.id,
-        p.nome,
-        p.categoria_id,
+        p.name,
+        p.category_id,
         p.volume,
-        c.nome AS categoria_nome,
+        c.name AS category_name,
+        CASE 
+          WHEN p.volume IS NOT NULL AND p.volume != '' 
+            THEN p.name || ' (' || p.volume || ')'
+          ELSE p.name 
+        END AS description,
         COALESCE(
-          (SELECT SUM(m.quantidade) FROM movimentacoes m 
-           WHERE m.produto_id = p.id AND m.tipo = 'ENTRADA'), 0.0
+          (SELECT SUM(m.quantity) FROM movements m 
+           WHERE m.product_id = p.id AND m.type = 'ENTRADA'), 0.0
         ) - COALESCE(
-          (SELECT SUM(m.quantidade) FROM movimentacoes m 
-           WHERE m.produto_id = p.id AND m.tipo = 'SAIDA'), 0.0
+          (SELECT SUM(m.quantity) FROM movements m 
+           WHERE m.product_id = p.id AND m.type = 'SAIDA'), 0.0
         ) AS saldo,
-        (SELECT m2.unidade_medida FROM movimentacoes m2 
-         WHERE m2.produto_id = p.id AND m2.tipo = 'ENTRADA'
-         ORDER BY m2.data_entrada DESC LIMIT 1) AS unidade_saldo
-      FROM produtos p
-      INNER JOIN categorias c ON p.categoria_id = c.id
+        (SELECT m2.unit_of_measurement FROM movements m2 
+         WHERE m2.product_id = p.id AND m2.type = 'ENTRADA'
+         ORDER BY m2.data_entry DESC LIMIT 1) AS unit_of_measurement
+      FROM products p
+      INNER JOIN categories c ON p.category_id = c.id
     ''';
 
     final List<dynamic> args = [];
     final List<String> whereClauses = [];
 
     if (search != null && search.isNotEmpty) {
-      whereClauses.add('(p.nome LIKE ? OR p.volume LIKE ?)');
+      whereClauses.add('(p.name LIKE ? OR p.volume LIKE ?)');
       args.add('%$search%');
       args.add('%$search%');
     }
 
     if (categoryId != null) {
-      whereClauses.add('p.categoria_id = ?');
+      whereClauses.add('p.category_id = ?');
       args.add(categoryId);
     }
 
@@ -55,7 +60,7 @@ class ProductRepository {
       query += ' WHERE ${whereClauses.join(' AND ')}';
     }
 
-    query += ' ORDER BY p.nome ASC';
+    query += ' ORDER BY p.name ASC';
 
     final List<Map<String, dynamic>> maps = await db.rawQuery(query, args);
     return List.generate(maps.length, (i) => ProductModel.fromMap(maps[i]));
@@ -67,22 +72,22 @@ class ProductRepository {
       '''
       SELECT 
         p.id,
-        p.nome,
-        p.categoria_id,
+        p.name,
+        p.category_id,
         p.volume,
-        c.nome AS categoria_nome,
+        c.name AS category_name,
         COALESCE(
-          (SELECT SUM(m.quantidade) FROM movimentacoes m 
-           WHERE m.produto_id = p.id AND m.tipo = 'ENTRADA'), 0.0
+          (SELECT SUM(m.quantity) FROM movements m 
+           WHERE m.product_id = p.id AND m.type = 'ENTRADA'), 0.0
         ) - COALESCE(
-          (SELECT SUM(m.quantidade) FROM movimentacoes m 
-           WHERE m.produto_id = p.id AND m.tipo = 'SAIDA'), 0.0
+          (SELECT SUM(m.quantity) FROM movements m 
+           WHERE m.product_id = p.id AND m.type = 'SAIDA'), 0.0
         ) AS saldo,
-        (SELECT m2.unidade_medida FROM movimentacoes m2 
-         WHERE m2.produto_id = p.id AND m2.tipo = 'ENTRADA'
-         ORDER BY m2.data_entrada DESC LIMIT 1) AS unidade_saldo
-      FROM produtos p
-      INNER JOIN categorias c ON p.categoria_id = c.id
+        (SELECT m2.unit_of_measurement FROM movements m2 
+         WHERE m2.product_id = p.id AND m2.type = 'ENTRADA'
+         ORDER BY m2.data_entry DESC LIMIT 1) AS unit_of_measurement
+      FROM products p
+      INNER JOIN categories c ON p.category_id = c.id
       WHERE p.id = ?
     ''',
       [id],
@@ -95,7 +100,7 @@ class ProductRepository {
   Future<int> update(ProductModel product) async {
     final db = await _dbHelper.database;
     return await db.update(
-      'produtos',
+      'products',
       product.toMap(),
       where: 'id = ?',
       whereArgs: [product.id],
@@ -104,6 +109,6 @@ class ProductRepository {
 
   Future<int> delete(int id) async {
     final db = await _dbHelper.database;
-    return await db.delete('produtos', where: 'id = ?', whereArgs: [id]);
+    return await db.delete('products', where: 'id = ?', whereArgs: [id]);
   }
 }

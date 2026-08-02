@@ -130,24 +130,24 @@ class _ReportsPageState extends State<ReportsPage> {
               ),
               ...list.map((mov) {
                 final isEntrada = mov.isEntrada;
-                final dataE = _formatDateStr(mov.dataEntrada);
-                final dataS = mov.dataSaida != null
-                    ? _formatDateStr(mov.dataSaida!)
+                final dataE = _formatDateStr(mov.dataEntry);
+                final dataS = mov.dataExit != null
+                    ? _formatDateStr(mov.dataExit!)
                     : '-';
                 return pw.TableRow(
                   children: [
                     _pdfCell('${mov.productName} (${mov.productVolume})'),
                     _pdfCell(
-                      mov.tipo,
+                      mov.type,
                       color: isEntrada ? PdfColors.green800 : PdfColors.red800,
                     ),
                     _pdfCell(
-                      '${mov.quantidade} ${mov.unidadeMedida}',
+                      '${mov.quantity} ${mov.unitOfMeasurement}',
                       color: isEntrada ? PdfColors.green800 : PdfColors.red800,
                     ),
                     _pdfCell(dataE),
                     _pdfCell(dataS),
-                    _pdfCell(mov.observacao ?? '-'),
+                    _pdfCell(mov.observation ?? '-'),
                   ],
                 );
               }),
@@ -329,7 +329,7 @@ class _ReportsPageState extends State<ReportsPage> {
                           ..._controller.products.value.map((p) {
                             return DropdownMenuItem<int?>(
                               value: p.id,
-                              child: Text(p.nome),
+                              child: Text(p.name),
                             );
                           }),
                         ],
@@ -359,7 +359,7 @@ class _ReportsPageState extends State<ReportsPage> {
                         itemBuilder: (context, index) {
                           final mov = list[index];
                           final isEntrada = mov.isEntrada;
-                          final dtE = mov.dataEntrada.split('T')[0];
+                          final dtE = mov.dataEntry.split('T')[0];
                           final dateE = dtE.isNotEmpty
                               ? _dateFormat
                                     .format(
@@ -372,8 +372,8 @@ class _ReportsPageState extends State<ReportsPage> {
                                     .split(' ')[0]
                               : '';
 
-                          final dataS = mov.dataSaida != null
-                              ? DateTime.tryParse(mov.dataSaida!)
+                          final dataS = mov.dataExit != null
+                              ? DateTime.tryParse(mov.dataExit!)
                               : null;
 
                           return Card(
@@ -401,12 +401,12 @@ class _ReportsPageState extends State<ReportsPage> {
                                     Text(
                                       'Saída: ${_dateFormat.format(dataS).split(' ')[0]}',
                                     ),
-                                  if (mov.observacao != null)
-                                    Text('Obs: ${mov.observacao}'),
+                                  if (mov.observation != null)
+                                    Text('Obs: ${mov.observation}'),
                                 ],
                               ),
                               trailing: Text(
-                                '${isEntrada ? "+" : "-"}${mov.quantidade} ${mov.unidadeMedida}',
+                                '${isEntrada ? "+" : "-"}${mov.quantity} ${mov.unitOfMeasurement}',
                                 style: TextStyle(
                                   fontWeight: FontWeight.bold,
                                   color: isEntrada ? Colors.green : Colors.red,

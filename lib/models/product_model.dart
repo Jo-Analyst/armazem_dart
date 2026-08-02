@@ -1,49 +1,53 @@
 class ProductModel {
   final int? id;
-  final String nome;
-  final int categoriaId;
-  final String? categoriaNome;
+  final String name;
+  final int categoryId;
+  final String? categoryName;
   final String? volume; // Volume do produto (ex: "1 KG", "500 ML")
+  final String? description;
 
   // Campos calculados dinamicamente (SUM entradas - SUM saídas)
-  final double saldo;
-  final String? unidadeSaldo; // unidade da última movimentação de entrada
+  final double balance;
+  final String? unitaryBalance; // unidade da última movimentação de entrada
 
   ProductModel({
     this.id,
-    required this.nome,
-    required this.categoriaId,
-    this.categoriaNome,
+    required this.name,
+    required this.categoryId,
+    this.categoryName,
     this.volume,
-    this.saldo = 0.0,
-    this.unidadeSaldo,
+    this.balance = 0.0,
+    this.unitaryBalance,
+    this.description,
   });
 
   Map<String, dynamic> toMap() {
     return {
       if (id != null) 'id': id,
-      'nome': nome,
-      'categoria_id': categoriaId,
+      'name': name,
+      'category_id': categoryId,
       if (volume != null) 'volume': volume,
+      if (description != null) 'description': description,
     };
   }
 
   factory ProductModel.fromMap(Map<String, dynamic> map) {
     return ProductModel(
       id: map['id'] as int?,
-      nome: map['nome'] as String,
-      categoriaId: map['categoria_id'] as int,
-      categoriaNome: map['categoria_nome'] as String?,
+      name: map['name'] as String,
+      categoryId: map['category_id'] as int,
+      categoryName: map['category_name'] as String?,
       volume: map['volume'] as String?,
-      saldo: (map['saldo'] as num?)?.toDouble() ?? 0.0,
-      unidadeSaldo: map['unidade_saldo'] as String?,
+      balance: (map['balance'] as num?)?.toDouble() ?? 0.0,
+      unitaryBalance: map['unit_of_measurement'] as String?,
+      description: map['description'] as String?,
     );
   }
 
   /// Retorna o saldo formatado com unidade de medida
-  String get saldoFormatado {
-    final unit = unidadeSaldo ?? '';
-    return '${_formatarNumero(saldo)} $unit'.trim();
+  String get balanceFormatado {
+    final unit = unitaryBalance ?? '';
+    return '${_formatarNumero(balance)} $unit'.trim();
   }
 
   static String _formatarNumero(double valor) {

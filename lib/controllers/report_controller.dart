@@ -45,7 +45,7 @@ class ReportController {
       // Filtro opcional por produto
       if (selectedProductId.value != null) {
         list = list
-            .where((m) => m.produtoId == selectedProductId.value)
+            .where((m) => m.productId == selectedProductId.value)
             .toList();
       }
 
@@ -69,10 +69,10 @@ class ReportController {
   }
 
   double get totalEntradas => movements.value
-      .where((m) => m.tipo == 'ENTRADA')
-      .fold(0.0, (sum, m) => sum + m.quantidade);
+      .where((m) => m.type == 'ENTRADA')
+      .fold(0.0, (sum, m) => sum + m.quantity);
 
   double get totalSaidas => movements.value
-      .where((m) => m.tipo == 'SAIDA')
-      .fold(0.0, (sum, m) => sum + m.quantidade);
+      .where((m) => m.type == 'SAIDA')
+      .fold(0.0, (sum, m) => sum + m.quantity);
 }

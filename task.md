@@ -12,27 +12,27 @@ Organize estritamente o código em `lib/`:
 ### 2. Regras de Negócio e Esquema do Banco de Dados:
 
 Tabelas:
-- categorias (id INTEGER PRIMARY KEY, nome TEXT UNIQUE)
+- categorias (id INTEGER PRIMARY KEY, name TEXT UNIQUE)
 - produtos (
     id INTEGER PRIMARY KEY AUTOINCREMENT, 
-    nome TEXT NOT NULL, 
-    categoria_id INTEGER NOT NULL,
-    FOREIGN KEY (categoria_id) REFERENCES categorias (id) ON DELETE CASCADE
+    name TEXT NOT NULL, 
+    category_id INTEGER NOT NULL,
+    FOREIGN KEY (category_id) REFERENCES categorias (id) ON DELETE CASCADE
   )
 - movimentacoes (
     id INTEGER PRIMARY KEY AUTOINCREMENT, 
-    produto_id INTEGER NOT NULL, 
-    tipo TEXT NOT NULL, -- 'ENTRADA' ou 'SAIDA'
-    quantidade REAL NOT NULL, 
-    unidade_medida TEXT NOT NULL, -- KG, UN, PCT, MALA, FARDO, CX, LT, OUTROS
-    data_entrada TEXT NOT NULL, 
-    data_saida TEXT, 
-    observacao TEXT,
-    FOREIGN KEY (produto_id) REFERENCES produtos (id) ON DELETE CASCADE
+    product_id INTEGER NOT NULL, 
+    type TEXT NOT NULL, -- 'ENTRADA' ou 'SAIDA'
+    quantity REAL NOT NULL, 
+    unit_of_measurement TEXT NOT NULL, -- KG, UN, PCT, MALA, FARDO, CX, LT, OUTROS
+    data_entry TEXT NOT NULL, 
+    data_exit TEXT, 
+    observation TEXT,
+    FOREIGN KEY (product_id) REFERENCES produtos (id) ON DELETE CASCADE
   )
 
 Regras Importantes de Movimentação e Saldo:
-- O Produto NÃO armazena quantidade física fixa nem unidade de medida; o saldo do produto é um cálculo dinâmico: Sum(Entradas) - Sum(Saídas).
+- O Produto NÃO armazena quantity física fixa nem unidade de medida; o saldo do produto é um cálculo dinâmico: Sum(Entradas) - Sum(Saídas).
 - O cadastro de novos produtos deve permitir cadastrar ou selecionar a Categoria diretamente no formulário.
 - A data de saída NÃO PODE ser inferior à data de entrada.
 - Se o saldo do produto for 0, o sistema DEVE BLOQUEAR qualquer tentativa de registrar saída e exigir que o usuário faça um novo registro de entrada.

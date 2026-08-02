@@ -8,19 +8,22 @@ class CategoryRepository {
 
   Future<int> insert(CategoryModel category) async {
     final db = await _dbHelper.database;
-    return await db.insert('categorias', category.toMap());
+    return await db.insert('categories', category.toMap());
   }
 
   Future<List<CategoryModel>> getAll() async {
     final db = await _dbHelper.database;
-    final List<Map<String, dynamic>> maps = await db.query('categorias', orderBy: 'nome ASC');
+    final List<Map<String, dynamic>> maps = await db.query(
+      'categories',
+      orderBy: 'name ASC',
+    );
     return List.generate(maps.length, (i) => CategoryModel.fromMap(maps[i]));
   }
 
   Future<int> update(CategoryModel category) async {
     final db = await _dbHelper.database;
     return await db.update(
-      'categorias',
+      'categories',
       category.toMap(),
       where: 'id = ?',
       whereArgs: [category.id],
@@ -29,10 +32,6 @@ class CategoryRepository {
 
   Future<int> delete(int id) async {
     final db = await _dbHelper.database;
-    return await db.delete(
-      'categorias',
-      where: 'id = ?',
-      whereArgs: [id],
-    );
+    return await db.delete('categories', where: 'id = ?', whereArgs: [id]);
   }
 }

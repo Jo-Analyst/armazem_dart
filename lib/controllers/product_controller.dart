@@ -58,19 +58,19 @@ class ProductController {
     loadProducts();
   }
 
-  /// Adiciona um novo produto. Não recebe mais quantidade nem unidade de medida,
+  /// Adiciona um novo produto. Não recebe mais quantity nem unidade de medida,
   /// pois o saldo é calculado dinamicamente pelas movimentações.
   Future<void> addProduct({
-    required String nome,
-    required int categoriaId,
+    required String name,
+    required int categoryId,
     String? volume,
   }) async {
     isLoading.value = true;
     error.value = null;
     try {
       final prod = ProductModel(
-        nome: nome,
-        categoriaId: categoriaId,
+        name: name,
+        categoryId: categoryId,
         volume: volume?.trim().isEmpty == true ? null : volume?.trim(),
       );
       await _productRepository.insert(prod);
@@ -84,14 +84,14 @@ class ProductController {
   }
 
   /// Cria ou seleciona uma categoria inline no formulário de produto.
-  Future<CategoryModel> addCategoryIfNeeded(String nome) async {
+  Future<CategoryModel> addCategoryIfNeeded(String name) async {
     final existing = categories.value.where(
-      (c) => c.nome.toLowerCase() == nome.trim().toLowerCase(),
+      (c) => c.name.toLowerCase() == name.trim().toLowerCase(),
     );
     if (existing.isNotEmpty) return existing.first;
 
     final id = await _categoryRepository.insert(
-      CategoryModel(nome: nome.trim()),
+      CategoryModel(name: name.trim()),
     );
     await loadCategories();
     return categories.value.firstWhere((c) => c.id == id);

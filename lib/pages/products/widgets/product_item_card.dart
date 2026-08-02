@@ -1,4 +1,3 @@
-// TODO Implement this library.
 import 'package:flutter/material.dart';
 import '../../../models/product_model.dart';
 
@@ -17,7 +16,7 @@ class ProductItemCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final saldoPositivo = product.saldo > 0;
+    final balancePositivo = product.balance > 0;
 
     return Card(
       shape: isSelected
@@ -32,27 +31,27 @@ class ProductItemCard extends StatelessWidget {
       child: ListTile(
         onLongPress: onLongPress,
         leading: CircleAvatar(
-          backgroundColor: saldoPositivo
+          backgroundColor: balancePositivo
               ? theme.colorScheme.primaryContainer
               : Colors.orange.shade100,
           child: Icon(
             Icons.inventory_2,
-            color: saldoPositivo
+            color: balancePositivo
                 ? theme.colorScheme.onPrimaryContainer
                 : Colors.orange.shade800,
           ),
         ),
         title: Text(
           product.volume != null && product.volume!.isNotEmpty
-              ? '${product.nome} (${product.volume})'
-              : product.nome,
+              ? '${product.name} (${product.volume})'
+              : product.name,
           style: TextStyle(
             fontWeight: FontWeight.bold,
             color: isSelected ? Colors.black : null,
           ),
         ),
         subtitle: Text(
-          'Categoria: ${product.categoriaNome ?? "Sem categoria"}',
+          'Categoria: ${product.categoryName ?? "Sem categoria"}',
           style: TextStyle(color: isSelected ? Colors.black : null),
         ),
         trailing: isSelected
@@ -63,22 +62,22 @@ class ProductItemCard extends StatelessWidget {
                   vertical: 5,
                 ),
                 decoration: BoxDecoration(
-                  color: saldoPositivo
+                  color: balancePositivo
                       ? Colors.green.shade100
                       : Colors.orange.shade100,
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
-                    color: saldoPositivo
+                    color: balancePositivo
                         ? Colors.green.shade300
                         : Colors.orange.shade300,
                   ),
                 ),
                 child: Text(
-                  saldoPositivo ? product.saldoFormatado : 'Sem estoque',
+                  balancePositivo ? product.balanceFormatado : 'Sem estoque',
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 13,
-                    color: saldoPositivo
+                    color: balancePositivo
                         ? Colors.green.shade800
                         : Colors.orange.shade800,
                   ),

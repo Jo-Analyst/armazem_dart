@@ -41,7 +41,7 @@ class _MovementsPageState extends State<MovementsPage> {
           content: Text(
             'Deseja excluir a movimentação de '
             '${movement.isEntrada ? 'ENTRADA' : 'SAÍDA'} de '
-            '${movement.quantidade} ${movement.unidadeMedida} '
+            '${movement.quantity} ${movement.unitOfMeasurement} '
             'do produto "${movement.productName ?? 'Desconhecido'}"?\n\n'
             'O saldo do produto será recalculado automaticamente.',
           ),
@@ -177,7 +177,7 @@ class _MovementsPageState extends State<MovementsPage> {
             itemBuilder: (context, index) {
               final mov = list[index];
               final isEntrada = mov.isEntrada;
-              final dt = mov.dataEntrada.split('T')[0];
+              final dt = mov.dataEntry.split('T')[0];
               final dateFormated = dt.isNotEmpty
                   ? _dateTimeFormat.format(
                       DateTime(
@@ -188,8 +188,8 @@ class _MovementsPageState extends State<MovementsPage> {
                     )
                   : '';
 
-              final dataS = mov.dataSaida != null
-                  ? DateTime.tryParse(mov.dataSaida!)
+              final dataS = mov.dataExit != null
+                  ? DateTime.tryParse(mov.dataExit!)
                   : null;
 
               return Card(
@@ -218,7 +218,7 @@ class _MovementsPageState extends State<MovementsPage> {
                     ),
                   ),
                   title: Text(
-                    '${mov.productName} (${mov.productVolume})',
+                    '${mov.productName} ${mov.productVolume != null ? '(${mov.productVolume})' : ''} ',
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       color: _selectedMovement?.id == mov.id
@@ -248,8 +248,8 @@ class _MovementsPageState extends State<MovementsPage> {
                             'Saída: ${_dateTimeFormat.format(dataS)}',
                           ),
                         ),
-                      if (mov.observacao != null)
-                        Text('Obs: ${mov.observacao}'),
+                      if (mov.observation != null)
+                        Text('Obs: ${mov.observation}'),
                     ],
                   ),
                   trailing: _selectedMovement?.id == mov.id
@@ -260,7 +260,7 @@ class _MovementsPageState extends State<MovementsPage> {
                             FittedBox(
                               fit: BoxFit.scaleDown,
                               child: Text(
-                                '${isEntrada ? "+" : "-"}${mov.quantidade} ${mov.unidadeMedida}',
+                                '${isEntrada ? "+" : "-"}${mov.quantity} ${mov.unitOfMeasurement}',
                                 style: TextStyle(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 15,
