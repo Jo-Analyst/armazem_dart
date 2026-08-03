@@ -21,8 +21,14 @@ class ProductController {
   final categoryFilter = signal<int?>(null);
 
   Future<void> init() async {
+    resetFilters();
     await loadCategories();
     await loadProducts();
+  }
+
+  void resetFilters() {
+    searchFilter.value = '';
+    categoryFilter.value = null;
   }
 
   Future<void> loadCategories() async {

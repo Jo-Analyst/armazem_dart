@@ -23,6 +23,7 @@ class _ProductsPageState extends State<ProductsPage> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _controller.init();
+      _searchController.clear();
     });
   }
 
@@ -151,7 +152,7 @@ class _ProductsPageState extends State<ProductsPage> {
                   child: SignalBuilder(
                     builder: (context) {
                       return DropdownButtonFormField<int?>(
-                        initialValue: _controller.categoryFilter.value,
+                        value: _controller.categoryFilter.value,
                         decoration: const InputDecoration(
                           labelText: 'Categoria',
                           border: OutlineInputBorder(),
