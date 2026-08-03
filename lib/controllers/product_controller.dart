@@ -20,7 +20,7 @@ class ProductController {
   final searchFilter = signal<String>('');
   final categoryFilter = signal<int?>(null);
 
-  static const int _pageSize = 9;
+  static const int _pageSize = 10;
   int _productPage = 0;
   bool _hasMoreProducts = true;
   bool _isLoadingMoreProducts = false;
