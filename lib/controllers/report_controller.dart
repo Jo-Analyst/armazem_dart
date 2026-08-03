@@ -75,6 +75,14 @@ class ReportController {
   final error = signal<String?>(null);
   final selectedProductName = signal<String?>(null);
 
+  static const int _pageSize = 10;
+  int _reportPage = 0;
+  bool _hasMoreReport = true;
+  bool _isLoadingMoreReport = false;
+
+  bool get hasMoreReport => _hasMoreReport;
+  bool get isLoadingMoreReport => _isLoadingMoreReport;
+
   final startDate = signal<DateTime>(
     DateTime(DateTime.now().year, DateTime.now().month, 1),
   );
@@ -85,11 +93,14 @@ class ReportController {
   Future<void> init() async {
     resetFilters();
     await _loadProducts();
-    await loadReport();
+    await loadReport(reset: true);
   }
 
   void resetFilters() {
     selectedProductName.value = null;
+    _reportPage = 0;
+    _hasMoreReport = true;
+    _isLoadingMoreReport = false;
     startDate.value = DateTime(DateTime.now().year, DateTime.now().month, 1);
     endDate.value = DateTime(DateTime.now().year, DateTime.now().month + 1, 0);
   }
@@ -103,37 +114,91 @@ class ReportController {
     }
   }
 
-  Future<void> loadReport() async {
-    isLoading.value = true;
+  Future<void> loadReport({bool reset = true}) async {
+    if (reset) {
+      _reportPage = 0;
+      _hasMoreReport = true;
+      movements.value = [];
+    }
+
+    if (!_hasMoreReport || _isLoadingMoreReport) return;
+
+    if (reset) {
+      isLoading.value = true;
+    } else {
+      _isLoadingMoreReport = true;
+    }
     error.value = null;
+
     try {
       final startStr = startDate.value.toIso8601String().split('T').first;
       final endStr = endDate.value.toIso8601String().split('T').first;
-      var list = await _movementRepository.getByPeriod(startStr, endStr);
+      final productIds = _getSelectedProductIds();
 
-      list = filterMovementsByProductName(
-        list,
-        selectedProductName.value,
-        products.value,
+      final list = await _movementRepository.getByPeriod(
+        startStr,
+        endStr,
+        productIds: productIds,
+        limit: _pageSize,
+        offset: _reportPage * _pageSize,
       );
 
-      movements.value = list;
+      if (reset) {
+        movements.value = list;
+      } else {
+        movements.value = [...movements.value, ...list];
+      }
+
+      _hasMoreReport = list.length == _pageSize;
+      if (_hasMoreReport) {
+        _reportPage++;
+      }
     } catch (e) {
       error.value = e.toString();
     } finally {
-      isLoading.value = false;
+      if (reset) {
+        isLoading.value = false;
+      } else {
+        _isLoadingMoreReport = false;
+      }
     }
+  }
+
+  List<int>? _getSelectedProductIds() {
+    if (selectedProductName.value == null ||
+        selectedProductName.value!.isEmpty) {
+      return null;
+    }
+
+    final selectedOption = products.value.firstWhere(
+      (option) => option.name == selectedProductName.value,
+      orElse: () => ProductFilterOption(name: '', productIds: const []),
+    );
+
+    return selectedOption.productIds.isEmpty ? null : selectedOption.productIds;
   }
 
   void updatePeriod(DateTime start, DateTime end) {
     startDate.value = start;
     endDate.value = end;
-    loadReport();
+    loadReport(reset: true);
   }
 
   void updateProductFilter(String? productName) {
     selectedProductName.value = productName;
-    loadReport();
+    loadReport(reset: true);
+  }
+
+  Future<List<MovementModel>> fetchFullReport() async {
+    final startStr = startDate.value.toIso8601String().split('T').first;
+    final endStr = endDate.value.toIso8601String().split('T').first;
+    final productIds = _getSelectedProductIds();
+
+    return await _movementRepository.getByPeriod(
+      startStr,
+      endStr,
+      productIds: productIds,
+    );
   }
 
   double get totalEntradas => movements.value

@@ -20,10 +20,18 @@ class ProductController {
   final searchFilter = signal<String>('');
   final categoryFilter = signal<int?>(null);
 
+  static const int _pageSize = 9;
+  int _productPage = 0;
+  bool _hasMoreProducts = true;
+  bool _isLoadingMoreProducts = false;
+
+  bool get hasMoreProducts => _hasMoreProducts;
+  bool get isLoadingMoreProducts => _isLoadingMoreProducts;
+
   Future<void> init() async {
     resetFilters();
     await loadCategories();
-    await loadProducts();
+    await loadProducts(reset: true);
   }
 
   void resetFilters() {
@@ -40,30 +48,59 @@ class ProductController {
     }
   }
 
-  Future<void> loadProducts() async {
-    isLoading.value = true;
+  Future<void> loadProducts({bool reset = true}) async {
+    if (reset) {
+      _productPage = 0;
+      _hasMoreProducts = true;
+      products.value = [];
+    }
+
+    if (!_hasMoreProducts || _isLoadingMoreProducts) return;
+
+    if (reset) {
+      isLoading.value = true;
+    } else {
+      _isLoadingMoreProducts = true;
+    }
     error.value = null;
+
     try {
       final list = await _productRepository.getAll(
         search: searchFilter.value,
         categoryId: categoryFilter.value,
+        limit: _pageSize,
+        offset: _productPage * _pageSize,
       );
-      products.value = list;
+
+      if (reset) {
+        products.value = list;
+      } else {
+        products.value = [...products.value, ...list];
+      }
+
+      _hasMoreProducts = list.length == _pageSize;
+      if (_hasMoreProducts) {
+        _productPage++;
+      }
     } catch (e) {
       error.value = e.toString();
     } finally {
-      isLoading.value = false;
+      if (reset) {
+        isLoading.value = false;
+      } else {
+        _isLoadingMoreProducts = false;
+      }
     }
   }
 
   void updateSearch(String query) {
     searchFilter.value = query;
-    loadProducts();
+    loadProducts(reset: true);
   }
 
   void updateCategoryFilter(int? catId) {
     categoryFilter.value = catId;
-    loadProducts();
+    loadProducts(reset: true);
   }
 
   /// Adiciona um novo produto. Não recebe mais quantity nem unidade de medida,

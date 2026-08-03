@@ -17,9 +17,17 @@ class MovementController {
   final isLoading = signal(false);
   final error = signal<String?>(null);
 
+  static const int _pageSize = 10;
+  int _movementPage = 0;
+  bool _hasMoreMovements = true;
+  bool _isLoadingMoreMovements = false;
+
+  bool get hasMoreMovements => _hasMoreMovements;
+  bool get isLoadingMoreMovements => _isLoadingMoreMovements;
+
   Future<void> init() async {
     await loadProducts();
-    await loadMovements();
+    await loadMovements(reset: true);
   }
 
   Future<void> loadProducts() async {
@@ -31,16 +39,46 @@ class MovementController {
     }
   }
 
-  Future<void> loadMovements() async {
-    isLoading.value = true;
+  Future<void> loadMovements({bool reset = true}) async {
+    if (reset) {
+      _movementPage = 0;
+      _hasMoreMovements = true;
+      movements.value = [];
+    }
+
+    if (!_hasMoreMovements || _isLoadingMoreMovements) return;
+
+    if (reset) {
+      isLoading.value = true;
+    } else {
+      _isLoadingMoreMovements = true;
+    }
     error.value = null;
+
     try {
-      final list = await _movementRepository.getAll();
-      movements.value = list;
+      final list = await _movementRepository.getAll(
+        limit: _pageSize,
+        offset: _movementPage * _pageSize,
+      );
+
+      if (reset) {
+        movements.value = list;
+      } else {
+        movements.value = [...movements.value, ...list];
+      }
+
+      _hasMoreMovements = list.length == _pageSize;
+      if (_hasMoreMovements) {
+        _movementPage++;
+      }
     } catch (e) {
       error.value = e.toString();
     } finally {
-      isLoading.value = false;
+      if (reset) {
+        isLoading.value = false;
+      } else {
+        _isLoadingMoreMovements = false;
+      }
     }
   }
 

@@ -16,11 +16,13 @@ class ProductsPage extends StatefulWidget {
 class _ProductsPageState extends State<ProductsPage> {
   final _controller = locator<ProductController>();
   final _searchController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
   ProductModel? _selectedProduct;
 
   @override
   void initState() {
     super.initState();
+    _scrollController.addListener(_onScroll);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _controller.init();
       _searchController.clear();
@@ -29,8 +31,19 @@ class _ProductsPageState extends State<ProductsPage> {
 
   @override
   void dispose() {
+    _scrollController.dispose();
     _searchController.dispose();
     super.dispose();
+  }
+
+  void _onScroll() {
+    if (!_scrollController.hasClients) return;
+    if (_scrollController.position.extentAfter < 150 &&
+        _controller.hasMoreProducts &&
+        !_controller.isLoading.value &&
+        !_controller.isLoadingMoreProducts) {
+      _controller.loadProducts(reset: false);
+    }
   }
 
   void _confirmDelete(ProductModel product) {
@@ -178,6 +191,13 @@ class _ProductsPageState extends State<ProductsPage> {
               ],
             ),
           ),
+          SignalBuilder(
+            builder: (context) {
+              return _controller.isLoading.value
+                  ? const LinearProgressIndicator()
+                  : const SizedBox(height: 1);
+            },
+          ),
 
           // Lista de Produtos / Estados da UI
           Expanded(
@@ -221,9 +241,27 @@ class _ProductsPageState extends State<ProductsPage> {
                 }
 
                 return ListView.builder(
+                  controller: _scrollController,
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  itemCount: list.length,
+                  itemCount:
+                      list.length + (_controller.hasMoreProducts ? 1 : 0),
                   itemBuilder: (context, index) {
+                    if (index >= list.length) {
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 16.0),
+                        child: Center(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: const [
+                              CircularProgressIndicator(),
+                              SizedBox(height: 8),
+                              Text('Carregando mais produtos...'),
+                            ],
+                          ),
+                        ),
+                      );
+                    }
+
                     final prod = list[index];
                     final isSelected = _selectedProduct?.id == prod.id;
 

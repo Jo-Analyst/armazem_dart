@@ -73,24 +73,38 @@ class MovementRepository {
     await db.insert('movements', movement.toMap());
   }
 
-  Future<List<MovementModel>> getAll() async {
+  Future<List<MovementModel>> getAll({int? limit, int? offset}) async {
     final db = await _dbHelper.database;
-    final List<Map<String, dynamic>> maps = await db.rawQuery('''
+    String query = '''
       SELECT m.*, p.name AS product_name, p.volume AS product_volume
       FROM movements m
       INNER JOIN products p ON m.product_id = p.id
       ORDER BY m.data_entry DESC
-    ''');
+    ''';
+
+    final List<dynamic> args = [];
+    if (limit != null) {
+      query += ' LIMIT ?';
+      args.add(limit);
+      if (offset != null) {
+        query += ' OFFSET ?';
+        args.add(offset);
+      }
+    }
+
+    final List<Map<String, dynamic>> maps = await db.rawQuery(query, args);
     return List.generate(maps.length, (i) => MovementModel.fromMap(maps[i]));
   }
 
   Future<List<MovementModel>> getByPeriod(
     String startDate,
-    String endDate,
-  ) async {
+    String endDate, {
+    List<int>? productIds,
+    int? limit,
+    int? offset,
+  }) async {
     final db = await _dbHelper.database;
-    final List<Map<String, dynamic>> maps = await db.rawQuery(
-      '''
+    String query = '''
       SELECT m.*, p.name AS product_name, p.volume AS product_volume
       FROM movements m
       INNER JOIN products p ON m.product_id = p.id
@@ -108,15 +122,35 @@ class MovementRepository {
             ELSE m.data_entry
           END
         ) <= DATE(?)
+    ''';
+
+    final List<dynamic> args = [startDate, endDate];
+
+    if (productIds != null && productIds.isNotEmpty) {
+      final placeholders = List.filled(productIds.length, '?').join(', ');
+      query += ' AND m.product_id IN ($placeholders)';
+      args.addAll(productIds);
+    }
+
+    query += '''
       ORDER BY
         CASE
           WHEN m.type = 'SAIDA' AND (m.data_entry IS NULL OR m.data_entry = '')
             THEN m.data_exit
           ELSE m.data_entry
         END DESC
-    ''',
-      [startDate, endDate],
-    );
+    ''';
+
+    if (limit != null) {
+      query += ' LIMIT ?';
+      args.add(limit);
+      if (offset != null) {
+        query += ' OFFSET ?';
+        args.add(offset);
+      }
+    }
+
+    final List<Map<String, dynamic>> maps = await db.rawQuery(query, args);
     return List.generate(maps.length, (i) => MovementModel.fromMap(maps[i]));
   }
 

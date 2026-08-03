@@ -11,7 +11,12 @@ class ProductRepository {
     return await db.insert('products', product.toMap());
   }
 
-  Future<List<ProductModel>> getAll({String? search, int? categoryId}) async {
+  Future<List<ProductModel>> getAll({
+    String? search,
+    int? categoryId,
+    int? limit,
+    int? offset,
+  }) async {
     final db = await _dbHelper.database;
 
     // Saldo calculado dinamicamente como SUM(ENTRADA) - SUM(SAIDA)
@@ -61,6 +66,15 @@ class ProductRepository {
     }
 
     query += ' ORDER BY p.name ASC';
+
+    if (limit != null) {
+      query += ' LIMIT ?';
+      args.add(limit);
+      if (offset != null) {
+        query += ' OFFSET ?';
+        args.add(offset);
+      }
+    }
 
     final List<Map<String, dynamic>> maps = await db.rawQuery(query, args);
     return List.generate(maps.length, (i) => ProductModel.fromMap(maps[i]));

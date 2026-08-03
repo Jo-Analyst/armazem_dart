@@ -21,13 +21,25 @@ class ReportsPage extends StatefulWidget {
 class _ReportsPageState extends State<ReportsPage> {
   final _controller = locator<ReportController>();
   final _dateFormat = DateFormat('dd/MM/yyyy');
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
+    _scrollController.addListener(_onScroll);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _controller.init();
     });
+  }
+
+  void _onScroll() {
+    if (!_scrollController.hasClients) return;
+    if (_scrollController.position.extentAfter < 150 &&
+        _controller.hasMoreReport &&
+        !_controller.isLoading.value &&
+        !_controller.isLoadingMoreReport) {
+      _controller.loadReport(reset: false);
+    }
   }
 
   Future<void> _selectDateRange() async {
@@ -46,7 +58,11 @@ class _ReportsPageState extends State<ReportsPage> {
     }
   }
 
-  Future<String> _criarArquivoPdf(List<MovementModel> list) async {
+  Future<String> _criarArquivoPdf(
+    List<MovementModel> list,
+    double totalEntradas,
+    double totalSaidas,
+  ) async {
     final pdf = pw.Document();
     final start = _dateFormat.format(_controller.startDate.value);
     final end = _dateFormat.format(_controller.endDate.value);
@@ -89,14 +105,14 @@ class _ReportsPageState extends State<ReportsPage> {
               mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
               children: [
                 pw.Text(
-                  'Total Entradas: ${_controller.totalEntradas}',
+                  'Total Entradas: $totalEntradas',
                   style: pw.TextStyle(
                     color: PdfColors.green800,
                     fontWeight: pw.FontWeight.bold,
                   ),
                 ),
                 pw.Text(
-                  'Total Saídas: ${_controller.totalSaidas}',
+                  'Total Saídas: $totalSaidas',
                   style: pw.TextStyle(
                     color: PdfColors.red800,
                     fontWeight: pw.FontWeight.bold,
@@ -165,8 +181,17 @@ class _ReportsPageState extends State<ReportsPage> {
     return file.path;
   }
 
-  Future<void> _gerarPdf(List<MovementModel> list) async {
-    final filePath = await _criarArquivoPdf(list);
+  Future<void> _gerarPdf() async {
+    final list = await _controller.fetchFullReport();
+    final filePath = await _criarArquivoPdf(
+      list,
+      list
+          .where((m) => m.type == 'ENTRADA')
+          .fold(0.0, (sum, m) => sum + m.quantity),
+      list
+          .where((m) => m.type == 'SAIDA')
+          .fold(0.0, (sum, m) => sum + m.quantity),
+    );
     await Printing.layoutPdf(
       onLayout: (format) async => File(filePath).readAsBytes(),
       name:
@@ -174,9 +199,18 @@ class _ReportsPageState extends State<ReportsPage> {
     );
   }
 
-  Future<void> _compartilharRelatorio(List<MovementModel> list) async {
+  Future<void> _compartilharRelatorio() async {
     try {
-      final filePath = await _criarArquivoPdf(list);
+      final list = await _controller.fetchFullReport();
+      final filePath = await _criarArquivoPdf(
+        list,
+        list
+            .where((m) => m.type == 'ENTRADA')
+            .fold(0.0, (sum, m) => sum + m.quantity),
+        list
+            .where((m) => m.type == 'SAIDA')
+            .fold(0.0, (sum, m) => sum + m.quantity),
+      );
       await SharePlus.instance.share(
         ShareParams(
           files: [XFile(filePath)],
@@ -244,14 +278,12 @@ class _ReportsPageState extends State<ReportsPage> {
                   IconButton(
                     icon: const Icon(Icons.share),
                     tooltip: 'Compartilhar PDF',
-                    onPressed: list.isEmpty
-                        ? null
-                        : () => _compartilharRelatorio(list),
+                    onPressed: list.isEmpty ? null : _compartilharRelatorio,
                   ),
                   IconButton(
                     icon: const Icon(Icons.print),
                     tooltip: 'Imprimir',
-                    onPressed: list.isEmpty ? null : () => _gerarPdf(list),
+                    onPressed: list.isEmpty ? null : _gerarPdf,
                   ),
                 ],
               );
@@ -267,6 +299,10 @@ class _ReportsPageState extends State<ReportsPage> {
 
           return Column(
             children: [
+              if (_controller.isLoading.value) ...[
+                const LinearProgressIndicator(),
+                const SizedBox(height: 1),
+              ],
               // Banner de período e resumo
               Container(
                 padding: const EdgeInsets.all(16.0),
@@ -358,9 +394,28 @@ class _ReportsPageState extends State<ReportsPage> {
                         ),
                       )
                     : ListView.builder(
+                        controller: _scrollController,
                         padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                        itemCount: list.length,
+                        itemCount:
+                            list.length + (_controller.hasMoreReport ? 1 : 0),
                         itemBuilder: (context, index) {
+                          if (index >= list.length) {
+                            return Padding(
+                              padding: const EdgeInsets.symmetric(
+                                vertical: 16.0,
+                              ),
+                              child: Center(
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: const [
+                                    CircularProgressIndicator(),
+                                    SizedBox(height: 8),
+                                    Text('Carregando mais registros...'),
+                                  ],
+                                ),
+                              ),
+                            );
+                          }
                           final mov = list[index];
                           final isEntrada = mov.isEntrada;
                           final dtE = mov.dataEntry.split('T')[0];
@@ -430,7 +485,7 @@ class _ReportsPageState extends State<ReportsPage> {
           final list = _controller.movements.value;
           return FloatingActionButton.extended(
             foregroundColor: Colors.white,
-            onPressed: list.isEmpty ? null : () => _gerarPdf(list),
+            onPressed: list.isEmpty ? null : _gerarPdf,
             icon: const Icon(Icons.print),
             label: const Text('Imprimir'),
           );
