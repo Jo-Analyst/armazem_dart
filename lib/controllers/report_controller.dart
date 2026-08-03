@@ -24,8 +24,15 @@ class ReportController {
   );
 
   Future<void> init() async {
+    resetFilters();
     await _loadProducts();
     await loadReport();
+  }
+
+  void resetFilters() {
+    selectedProductId.value = null;
+    startDate.value = DateTime(DateTime.now().year, DateTime.now().month, 1);
+    endDate.value = DateTime(DateTime.now().year, DateTime.now().month + 1, 0);
   }
 
   Future<void> _loadProducts() async {

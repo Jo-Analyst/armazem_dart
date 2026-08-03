@@ -314,26 +314,30 @@ class _ReportsPageState extends State<ReportsPage> {
                     const SizedBox(width: 16),
                     // Filtro por produto
                     Expanded(
-                      child: DropdownButtonFormField<int?>(
-                        initialValue: _controller.selectedProductId.value,
-                        decoration: const InputDecoration(
-                          labelText: 'Filtrar por produto',
-                          border: OutlineInputBorder(),
-                        ),
-                        isExpanded: true,
-                        items: [
-                          const DropdownMenuItem<int?>(
-                            value: null,
-                            child: Text('Todos'),
-                          ),
-                          ..._controller.products.value.map((p) {
-                            return DropdownMenuItem<int?>(
-                              value: p.id,
-                              child: Text(p.name),
-                            );
-                          }),
-                        ],
-                        onChanged: _controller.updateProductFilter,
+                      child: SignalBuilder(
+                        builder: (context) {
+                          return DropdownButtonFormField<int?>(
+                            value: _controller.selectedProductId.value,
+                            decoration: const InputDecoration(
+                              labelText: 'Filtrar por produto',
+                              border: OutlineInputBorder(),
+                            ),
+                            isExpanded: true,
+                            items: [
+                              const DropdownMenuItem<int?>(
+                                value: null,
+                                child: Text('Todos'),
+                              ),
+                              ..._controller.products.value.map((p) {
+                                return DropdownMenuItem<int?>(
+                                  value: p.id,
+                                  child: Text(p.name),
+                                );
+                              }),
+                            ],
+                            onChanged: _controller.updateProductFilter,
+                          );
+                        },
                       ),
                     ),
                   ],
