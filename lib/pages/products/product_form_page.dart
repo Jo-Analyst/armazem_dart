@@ -175,6 +175,7 @@ class _ProductFormPageState extends State<ProductFormPage> {
                   }
                   return null;
                 },
+                onFieldSubmitted: (_) => _saveProduct(),
               ),
               const SizedBox(height: 16),
 
@@ -192,6 +193,7 @@ class _ProductFormPageState extends State<ProductFormPage> {
                         )
                       : null,
                 ),
+                onFieldSubmitted: (_) => _saveProduct(),
               ),
               const SizedBox(height: 16),
 
@@ -262,6 +264,7 @@ class _ProductFormPageState extends State<ProductFormPage> {
                                 )
                               : null,
                         ),
+                        onFieldSubmitted: (_) => _saveProduct(),
                         validator: (val) {
                           if (_addingNewCategory &&
                               (val == null || val.trim().isEmpty)) {

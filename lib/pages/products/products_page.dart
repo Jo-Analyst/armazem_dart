@@ -152,7 +152,7 @@ class _ProductsPageState extends State<ProductsPage> {
                   child: SignalBuilder(
                     builder: (context) {
                       return DropdownButtonFormField<int?>(
-                        value: _controller.categoryFilter.value,
+                        initialValue: _controller.categoryFilter.value,
                         decoration: const InputDecoration(
                           labelText: 'Categoria',
                           border: OutlineInputBorder(),
