@@ -301,7 +301,6 @@ class _ReportsPageState extends State<ReportsPage> {
             children: [
               if (_controller.isLoading.value) ...[
                 const LinearProgressIndicator(),
-                const SizedBox(height: 1),
               ],
               // Banner de período e resumo
               Container(

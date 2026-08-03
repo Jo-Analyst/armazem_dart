@@ -151,7 +151,7 @@ class _MovementsPageState extends State<MovementsPage> {
             builder: (context) {
               return _controller.isLoading.value
                   ? const LinearProgressIndicator()
-                  : const SizedBox(height: 1);
+                  : const SizedBox.shrink();
             },
           ),
           Expanded(

@@ -195,7 +195,7 @@ class _ProductsPageState extends State<ProductsPage> {
             builder: (context) {
               return _controller.isLoading.value
                   ? const LinearProgressIndicator()
-                  : const SizedBox(height: 1);
+                  : const SizedBox.shrink();
             },
           ),
 
