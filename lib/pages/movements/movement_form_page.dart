@@ -460,8 +460,22 @@ class _MovementFormPageState extends State<MovementFormPage> {
                         if (qty == null || qty <= 0) {
                           return 'Deve ser um número maior que 0';
                         }
-                        if (_selectedType == 'SAIDA' && qty > _saldoAtual) {
-                          return 'Excede o saldo ($_saldoAtual)';
+                        if (_selectedType == 'SAIDA') {
+                          if (widget.movement == null) {
+                            // Na criação, não pode exceder o saldo atual
+                            if (qty > _saldoAtual) {
+                              return 'Excede o saldo ($_saldoAtual)';
+                            }
+                          } else {
+                            // Na edição, verificar se o saldo após a alteração será >= 0
+                            final quantidadeOriginal =
+                                widget.movement!.quantity;
+                            final diferenca = qty - quantidadeOriginal;
+                            final saldoAposEdicao = _saldoAtual - diferenca;
+                            if (saldoAposEdicao < 0) {
+                              return 'Saldo após edição seria negativo (${saldoAposEdicao.toStringAsFixed(2)})';
+                            }
+                          }
                         }
                         return null;
                       },
