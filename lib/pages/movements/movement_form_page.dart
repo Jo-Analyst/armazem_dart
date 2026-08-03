@@ -283,6 +283,7 @@ class _MovementFormPageState extends State<MovementFormPage> {
                               }
                               return null;
                             },
+                            onFieldSubmitted: (_) => _saveMovement(),
                           );
                         },
                     onSelected: (ProductModel selection) async {
@@ -449,6 +450,7 @@ class _MovementFormPageState extends State<MovementFormPage> {
                         }
                         return null;
                       },
+                      onFieldSubmitted: (_) => _saveMovement(),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -581,6 +583,7 @@ class _MovementFormPageState extends State<MovementFormPage> {
                   }
                   return null;
                 },
+                onFieldSubmitted: (_) => _saveMovement(),
               ),
 
               const SizedBox(height: 24),

@@ -31,6 +31,43 @@ class _CategoriesPageState extends State<CategoriesPage> {
     super.dispose();
   }
 
+  Future<void> addCategory(
+    CategoryModel? category,
+    void Function() onTextChanged,
+  ) async {
+    if (_formKey.currentState!.validate()) {
+      try {
+        if (category == null) {
+          await _controller.addCategory(_nameController.text);
+        } else {
+          await _controller.editCategory(
+            CategoryModel(id: category.id, name: _nameController.text),
+          );
+        }
+        _nameController.removeListener(onTextChanged);
+        if (!mounted) return;
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              category == null
+                  ? 'Categoria adicionada!'
+                  : 'Categoria atualizada!',
+            ),
+          ),
+        );
+      } catch (e) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Erro: Categoria já existe ou dados inválidos.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
   void _showAddEditDialog([CategoryModel? category]) {
     _nameController.text = category?.name ?? '';
 
@@ -73,6 +110,7 @@ class _CategoriesPageState extends State<CategoriesPage> {
                     }
                     return null;
                   },
+                  onFieldSubmitted: (_) => addCategory(category, onTextChanged),
                 ),
               ),
               actions: [
@@ -85,42 +123,7 @@ class _CategoriesPageState extends State<CategoriesPage> {
                 ),
                 ElevatedButton(
                   onPressed: () async {
-                    if (_formKey.currentState!.validate()) {
-                      try {
-                        if (category == null) {
-                          await _controller.addCategory(_nameController.text);
-                        } else {
-                          await _controller.editCategory(
-                            CategoryModel(
-                              id: category.id,
-                              name: _nameController.text,
-                            ),
-                          );
-                        }
-                        _nameController.removeListener(onTextChanged);
-                        if (!mounted) return;
-                        Navigator.pop(context);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              category == null
-                                  ? 'Categoria adicionada!'
-                                  : 'Categoria atualizada!',
-                            ),
-                          ),
-                        );
-                      } catch (e) {
-                        if (!mounted) return;
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text(
-                              'Erro: Categoria já existe ou dados inválidos.',
-                            ),
-                            backgroundColor: Colors.red,
-                          ),
-                        );
-                      }
-                    }
+                    await addCategory(category!, onTextChanged);
                   },
                   child: const Text('Salvar'),
                 ),
