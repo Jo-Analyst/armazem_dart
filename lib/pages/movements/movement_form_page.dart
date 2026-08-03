@@ -43,6 +43,11 @@ class _MovementFormPageState extends State<MovementFormPage> {
       if (mounted) setState(() {});
     });
 
+    // Listener para re-renderizar ao digitar na observação (controla a visibilidade do ícone de limpar)
+    _obsController.addListener(() {
+      if (mounted) setState(() {});
+    });
+
     if (isEditing) {
       _quantityController.text = widget.movement!.quantity
           .toString()
@@ -603,6 +608,7 @@ class _MovementFormPageState extends State<MovementFormPage> {
 
               // Observação
               TextFormField(
+                textAlign: TextAlign.justify,
                 textCapitalization: TextCapitalization.sentences,
                 controller: _obsController,
                 maxLines: 3,
@@ -611,6 +617,12 @@ class _MovementFormPageState extends State<MovementFormPage> {
                       ? 'Observação *'
                       : 'Observação (opcional)',
                   border: const OutlineInputBorder(),
+                  suffixIcon: _obsController.text.isNotEmpty
+                      ? IconButton(
+                          icon: const Icon(Icons.clear),
+                          onPressed: () => _obsController.clear(),
+                        )
+                      : null,
                 ),
                 validator: (val) {
                   if (_selectedType == 'SAIDA' &&
