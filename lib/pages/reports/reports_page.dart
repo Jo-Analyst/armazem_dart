@@ -32,6 +32,12 @@ class _ReportsPageState extends State<ReportsPage> {
     });
   }
 
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
   void _onScroll() {
     if (!_scrollController.hasClients) return;
     if (_scrollController.position.extentAfter < 150 &&
@@ -291,193 +297,209 @@ class _ReportsPageState extends State<ReportsPage> {
           ),
         ],
       ),
-      body: SignalBuilder(
-        builder: (context) {
-          final start = _controller.startDate.value;
-          final end = _controller.endDate.value;
-          final list = _controller.movements.value;
+      // 1. ADICIONADO: SafeArea para evitar sobreposição da barra de botões nativa
+      body: SafeArea(
+        child: SignalBuilder(
+          builder: (context) {
+            final start = _controller.startDate.value;
+            final end = _controller.endDate.value;
+            final list = _controller.movements.value;
 
-          return Column(
-            children: [
-              if (_controller.isLoading.value) ...[
-                const LinearProgressIndicator(),
-              ],
-              // Banner de período e resumo
-              Container(
-                padding: const EdgeInsets.all(16.0),
-                color: theme.colorScheme.primaryContainer.withValues(
-                  alpha: 0.3,
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        'Período: ${_dateFormat.format(start)} a ${_dateFormat.format(end)}',
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 15,
-                        ),
-                      ),
-                    ),
-                    ElevatedButton.icon(
-                      onPressed: _selectDateRange,
-                      icon: const Icon(Icons.edit_calendar, size: 18),
-                      label: const Text('Alterar'),
-                    ),
-                  ],
-                ),
-              ),
-
-              // Cards de resumo
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Row(
-                  children: [
-                    _summaryCard(
-                      label: 'Entradas Totais',
-                      value: _controller.totalEntradas.toString(),
-                      color: Colors.green,
-                      icon: Icons.arrow_downward,
-                    ),
-                    const SizedBox(width: 16),
-                    _summaryCard(
-                      label: 'Saídas Totais',
-                      value: _controller.totalSaidas.toString(),
-                      color: Colors.red,
-                      icon: Icons.arrow_upward,
-                    ),
-                    const SizedBox(width: 16),
-                    // Filtro por produto
-                    Expanded(
-                      child: SignalBuilder(
-                        builder: (context) {
-                          return DropdownButtonFormField<String?>(
-                            initialValue: _controller.selectedProductName.value,
-                            decoration: const InputDecoration(
-                              labelText: 'Filtrar por produto',
-                              border: OutlineInputBorder(),
-                            ),
-                            isExpanded: true,
-                            items: [
-                              const DropdownMenuItem<String?>(
-                                value: null,
-                                child: Text('Todos'),
-                              ),
-                              ..._controller.products.value.map((p) {
-                                return DropdownMenuItem<String?>(
-                                  value: p.name,
-                                  child: Text(p.name),
-                                );
-                              }),
-                            ],
-                            onChanged: _controller.updateProductFilter,
-                          );
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              // Lista de movimentações
-              Expanded(
-                child: _controller.isLoading.value
-                    ? const Center(child: CircularProgressIndicator())
-                    : list.isEmpty
-                    ? Center(
+            return Column(
+              children: [
+                if (_controller.isLoading.value) ...[
+                  const LinearProgressIndicator(),
+                ],
+                // Banner de período e resumo
+                Container(
+                  padding: const EdgeInsets.all(16.0),
+                  color: theme.colorScheme.primaryContainer.withValues(
+                    alpha: 0.3,
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
                         child: Text(
-                          'Nenhuma movimentação no período.',
-                          style: theme.textTheme.titleMedium?.copyWith(
-                            color: theme.hintColor,
+                          'Período: ${_dateFormat.format(start)} a ${_dateFormat.format(end)}',
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 15,
                           ),
                         ),
-                      )
-                    : ListView.builder(
-                        controller: _scrollController,
-                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                        itemCount:
-                            list.length + (_controller.hasMoreReport ? 1 : 0),
-                        itemBuilder: (context, index) {
-                          if (index >= list.length) {
-                            return Padding(
-                              padding: const EdgeInsets.symmetric(
-                                vertical: 16.0,
-                              ),
-                              child: Center(
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: const [
-                                    CircularProgressIndicator(),
-                                    SizedBox(height: 8),
-                                    Text('Carregando mais registros...'),
-                                  ],
-                                ),
-                              ),
-                            );
-                          }
-                          final mov = list[index];
-                          final isEntrada = mov.isEntrada;
-                          final dtE = mov.dataEntry.split('T')[0];
-                          final dateE = dtE.isNotEmpty
-                              ? _dateFormat
-                                    .format(
-                                      DateTime(
-                                        int.parse(dtE.split('-')[0]),
-                                        int.parse(dtE.split('-')[1]),
-                                        int.parse(dtE.split('-')[2]),
-                                      ),
-                                    )
-                                    .split(' ')[0]
-                              : '';
-
-                          final dataS = mov.dataExit != null
-                              ? DateTime.tryParse(mov.dataExit!)
-                              : null;
-
-                          return Card(
-                            margin: const EdgeInsets.only(bottom: 8.0),
-                            child: ListTile(
-                              leading: CircleAvatar(
-                                backgroundColor: isEntrada
-                                    ? Colors.green.shade50
-                                    : Colors.red.shade50,
-                                child: Icon(
-                                  isEntrada
-                                      ? Icons.arrow_downward
-                                      : Icons.arrow_upward,
-                                  color: isEntrada ? Colors.green : Colors.red,
-                                ),
-                              ),
-                              title: Text(
-                                '${mov.productName} (${mov.productVolume})',
-                              ),
-                              subtitle: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  if (dateE.isNotEmpty) Text('Entrada: $dateE'),
-                                  if (dataS != null)
-                                    Text(
-                                      'Saída: ${_dateFormat.format(dataS).split(' ')[0]}',
-                                    ),
-                                  if (mov.observation != null)
-                                    Text('Obs: ${mov.observation}'),
-                                ],
-                              ),
-                              trailing: Text(
-                                '${isEntrada ? "+" : "-"}${mov.quantity} ${mov.unitOfMeasurement}',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: isEntrada ? Colors.green : Colors.red,
-                                ),
-                              ),
-                            ),
-                          );
-                        },
                       ),
-              ),
-            ],
-          );
-        },
+                      ElevatedButton.icon(
+                        onPressed: _selectDateRange,
+                        icon: const Icon(Icons.edit_calendar, size: 18),
+                        label: const Text('Alterar'),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // Cards de resumo
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Row(
+                    children: [
+                      _summaryCard(
+                        label: 'Entradas Totais',
+                        value: _controller.totalEntradas.toString(),
+                        color: Colors.green,
+                        icon: Icons.arrow_downward,
+                      ),
+                      const SizedBox(width: 16),
+                      _summaryCard(
+                        label: 'Saídas Totais',
+                        value: _controller.totalSaidas.toString(),
+                        color: Colors.red,
+                        icon: Icons.arrow_upward,
+                      ),
+                      const SizedBox(width: 16),
+                      // Filtro por produto
+                      Expanded(
+                        child: SignalBuilder(
+                          builder: (context) {
+                            return DropdownButtonFormField<String?>(
+                              initialValue:
+                                  _controller.selectedProductName.value,
+                              decoration: const InputDecoration(
+                                labelText: 'Filtrar por produto',
+                                border: OutlineInputBorder(),
+                              ),
+                              isExpanded: true,
+                              items: [
+                                const DropdownMenuItem<String?>(
+                                  value: null,
+                                  child: Text('Todos'),
+                                ),
+                                ..._controller.products.value.map((p) {
+                                  return DropdownMenuItem<String?>(
+                                    value: p.name,
+                                    child: Text(p.name),
+                                  );
+                                }),
+                              ],
+                              onChanged: _controller.updateProductFilter,
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // Lista de movimentações
+                Expanded(
+                  child: _controller.isLoading.value
+                      ? const Center(child: CircularProgressIndicator())
+                      : list.isEmpty
+                          ? Center(
+                              child: Text(
+                                'Nenhuma movimentação no período.',
+                                style: theme.textTheme.titleMedium?.copyWith(
+                                  color: theme.hintColor,
+                                ),
+                              ),
+                            )
+                          : ListView.builder(
+                              controller: _scrollController,
+                              // 2. ALTERADO: Adicionado bottom: 80.0 para dar o recuo necessário sobre o FAB
+                              padding: const EdgeInsets.only(
+                                left: 16.0,
+                                right: 16.0,
+                                top: 0.0,
+                                bottom: 80.0,
+                              ),
+                              itemCount: list.length +
+                                  (_controller.hasMoreReport ? 1 : 0),
+                              itemBuilder: (context, index) {
+                                if (index >= list.length) {
+                                  return Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 16.0,
+                                    ),
+                                    child: Center(
+                                      child: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: const [
+                                          CircularProgressIndicator(),
+                                          SizedBox(height: 8),
+                                          Text('Carregando mais registros...'),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                }
+                                final mov = list[index];
+                                final isEntrada = mov.isEntrada;
+                                final dtE = mov.dataEntry.split('T')[0];
+                                final dateE = dtE.isNotEmpty
+                                    ? _dateFormat
+                                        .format(
+                                          DateTime(
+                                            int.parse(dtE.split('-')[0]),
+                                            int.parse(dtE.split('-')[1]),
+                                            int.parse(dtE.split('-')[2]),
+                                          ),
+                                        )
+                                        .split(' ')[0]
+                                    : '';
+
+                                final dataS = mov.dataExit != null
+                                    ? DateTime.tryParse(mov.dataExit!)
+                                    : null;
+
+                                return Card(
+                                  margin: const EdgeInsets.only(bottom: 8.0),
+                                  child: ListTile(
+                                    leading: CircleAvatar(
+                                      backgroundColor: isEntrada
+                                          ? Colors.green.shade50
+                                          : Colors.red.shade50,
+                                      child: Icon(
+                                        isEntrada
+                                            ? Icons.arrow_downward
+                                            : Icons.arrow_upward,
+                                        color: isEntrada
+                                            ? Colors.green
+                                            : Colors.red,
+                                      ),
+                                    ),
+                                    title: Text(
+                                      '${mov.productName} (${mov.productVolume})',
+                                    ),
+                                    subtitle: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        if (dateE.isNotEmpty)
+                                          Text('Entrada: $dateE'),
+                                        if (dataS != null)
+                                          Text(
+                                            'Saída: ${_dateFormat.format(dataS).split(' ')[0]}',
+                                          ),
+                                        if (mov.observation != null)
+                                          Text('Obs: ${mov.observation}'),
+                                      ],
+                                    ),
+                                    trailing: Text(
+                                      '${isEntrada ? "+" : "-"}${mov.quantity} ${mov.unitOfMeasurement}',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: isEntrada
+                                            ? Colors.green
+                                            : Colors.red,
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                ),
+              ],
+            );
+          },
+        ),
       ),
       floatingActionButton: SignalBuilder(
         builder: (context) {

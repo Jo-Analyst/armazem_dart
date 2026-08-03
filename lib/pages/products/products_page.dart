@@ -124,160 +124,169 @@ class _ProductsPageState extends State<ProductsPage> {
               ]
             : null,
       ),
-      body: Column(
-        children: [
-          // Barra de busca e filtros
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Row(
-              children: [
-                Expanded(
-                  flex: 3,
-                  child: ValueListenableBuilder<TextEditingValue>(
-                    valueListenable: _searchController,
-                    builder: (context, value, child) {
-                      final hasText = value.text.isNotEmpty;
+      // 1. ADICIONADO: SafeArea para garantir que o conteúdo não fique sob os botões do Android
+      body: SafeArea(
+        child: Column(
+          children: [
+            // Barra de busca e filtros
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Row(
+                children: [
+                  Expanded(
+                    flex: 3,
+                    child: ValueListenableBuilder<TextEditingValue>(
+                      valueListenable: _searchController,
+                      builder: (context, value, child) {
+                        final hasText = value.text.isNotEmpty;
 
-                      return TextField(
-                        controller: _searchController,
-                        decoration: InputDecoration(
-                          hintText: 'Buscar por name...',
-                          border: const OutlineInputBorder(),
-                          suffixIcon: hasText
-                              ? IconButton(
-                                  icon: const Icon(Icons.clear),
-                                  tooltip: 'Limpar busca',
-                                  onPressed: () {
-                                    _searchController.clear();
-                                    _controller.updateSearch('');
-                                  },
-                                )
-                              : const Icon(Icons.search),
-                        ),
-                        onChanged: _controller.updateSearch,
-                      );
-                    },
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  flex: 2,
-                  child: SignalBuilder(
-                    builder: (context) {
-                      return DropdownButtonFormField<int?>(
-                        initialValue: _controller.categoryFilter.value,
-                        decoration: const InputDecoration(
-                          labelText: 'Categoria',
-                          border: OutlineInputBorder(),
-                        ),
-                        isExpanded: true,
-                        items: [
-                          const DropdownMenuItem<int?>(
-                            value: null,
-                            child: Text('Todas'),
+                        return TextField(
+                          controller: _searchController,
+                          decoration: InputDecoration(
+                            hintText: 'Buscar por nome...',
+                            border: const OutlineInputBorder(),
+                            suffixIcon: hasText
+                                ? IconButton(
+                                    icon: const Icon(Icons.clear),
+                                    tooltip: 'Limpar busca',
+                                    onPressed: () {
+                                      _searchController.clear();
+                                      _controller.updateSearch('');
+                                    },
+                                  )
+                                : const Icon(Icons.search),
                           ),
-                          ..._controller.categories.value.map((cat) {
-                            return DropdownMenuItem<int?>(
-                              value: cat.id,
-                              child: Text(cat.name),
-                            );
-                          }),
-                        ],
-                        onChanged: _controller.updateCategoryFilter,
-                      );
-                    },
-                  ),
-                ),
-              ],
-            ),
-          ),
-          SignalBuilder(
-            builder: (context) {
-              return _controller.isLoading.value
-                  ? const LinearProgressIndicator()
-                  : const SizedBox.shrink();
-            },
-          ),
-
-          // Lista de Produtos / Estados da UI
-          Expanded(
-            child: SignalBuilder(
-              builder: (context) {
-                if (_controller.isLoading.value) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-
-                if (_controller.error.value != null) {
-                  return Center(
-                    child: Text(
-                      'Erro: ${_controller.error.value}',
-                      style: const TextStyle(color: Colors.red),
-                    ),
-                  );
-                }
-
-                final list = _controller.products.value;
-
-                if (list.isEmpty) {
-                  return Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.inventory_2_outlined,
-                          size: 64,
-                          color: theme.hintColor,
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          'Nenhum produto cadastrado.',
-                          style: theme.textTheme.titleMedium?.copyWith(
-                            color: theme.hintColor,
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                }
-
-                return ListView.builder(
-                  controller: _scrollController,
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  itemCount:
-                      list.length + (_controller.hasMoreProducts ? 1 : 0),
-                  itemBuilder: (context, index) {
-                    if (index >= list.length) {
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 16.0),
-                        child: Center(
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: const [
-                              CircularProgressIndicator(),
-                              SizedBox(height: 8),
-                              Text('Carregando mais produtos...'),
-                            ],
-                          ),
-                        ),
-                      );
-                    }
-
-                    final prod = list[index];
-                    final isSelected = _selectedProduct?.id == prod.id;
-
-                    return ProductItemCard(
-                      product: prod,
-                      isSelected: isSelected,
-                      onLongPress: () {
-                        setState(() => _selectedProduct = prod);
+                          onChanged: _controller.updateSearch,
+                        );
                       },
-                    );
-                  },
-                );
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    flex: 2,
+                    child: SignalBuilder(
+                      builder: (context) {
+                        return DropdownButtonFormField<int?>(
+                          initialValue: _controller.categoryFilter.value,
+                          decoration: const InputDecoration(
+                            labelText: 'Categoria',
+                            border: OutlineInputBorder(),
+                          ),
+                          isExpanded: true,
+                          items: [
+                            const DropdownMenuItem<int?>(
+                              value: null,
+                              child: Text('Todas'),
+                            ),
+                            ..._controller.categories.value.map((cat) {
+                              return DropdownMenuItem<int?>(
+                                value: cat.id,
+                                child: Text(cat.name),
+                              );
+                            }),
+                          ],
+                          onChanged: _controller.updateCategoryFilter,
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            SignalBuilder(
+              builder: (context) {
+                return _controller.isLoading.value
+                    ? const LinearProgressIndicator()
+                    : const SizedBox.shrink();
               },
             ),
-          ),
-        ],
+
+            // Lista de Produtos / Estados da UI
+            Expanded(
+              child: SignalBuilder(
+                builder: (context) {
+                  if (_controller.isLoading.value) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+
+                  if (_controller.error.value != null) {
+                    return Center(
+                      child: Text(
+                        'Erro: ${_controller.error.value}',
+                        style: const TextStyle(color: Colors.red),
+                      ),
+                    );
+                  }
+
+                  final list = _controller.products.value;
+
+                  if (list.isEmpty) {
+                    return Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.inventory_2_outlined,
+                            size: 64,
+                            color: theme.hintColor,
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            'Nenhum produto cadastrado.',
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              color: theme.hintColor,
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+
+                  return ListView.builder(
+                    controller: _scrollController,
+                    // 2. ALTERADO: Espaço extra no final (bottom: 80.0) para não cobrir o último item com o FAB
+                    padding: const EdgeInsets.only(
+                      left: 16.0,
+                      right: 16.0,
+                      top: 0.0,
+                      bottom: 80.0,
+                    ),
+                    itemCount:
+                        list.length + (_controller.hasMoreProducts ? 1 : 0),
+                    itemBuilder: (context, index) {
+                      if (index >= list.length) {
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 16.0),
+                          child: Center(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: const [
+                                CircularProgressIndicator(),
+                                SizedBox(height: 8),
+                                Text('Carregando mais produtos...'),
+                              ],
+                            ),
+                          ),
+                        );
+                      }
+
+                      final prod = list[index];
+                      final isSelected = _selectedProduct?.id == prod.id;
+
+                      return ProductItemCard(
+                        product: prod,
+                        isSelected: isSelected,
+                        onLongPress: () {
+                          setState(() => _selectedProduct = prod);
+                        },
+                      );
+                    },
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
       ),
       floatingActionButton: FloatingActionButton.extended(
         foregroundColor: Colors.white,
