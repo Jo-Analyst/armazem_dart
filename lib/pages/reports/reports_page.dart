@@ -316,21 +316,21 @@ class _ReportsPageState extends State<ReportsPage> {
                     Expanded(
                       child: SignalBuilder(
                         builder: (context) {
-                          return DropdownButtonFormField<int?>(
-                            value: _controller.selectedProductId.value,
+                          return DropdownButtonFormField<String?>(
+                            initialValue: _controller.selectedProductName.value,
                             decoration: const InputDecoration(
                               labelText: 'Filtrar por produto',
                               border: OutlineInputBorder(),
                             ),
                             isExpanded: true,
                             items: [
-                              const DropdownMenuItem<int?>(
+                              const DropdownMenuItem<String?>(
                                 value: null,
                                 child: Text('Todos'),
                               ),
                               ..._controller.products.value.map((p) {
-                                return DropdownMenuItem<int?>(
-                                  value: p.id,
+                                return DropdownMenuItem<String?>(
+                                  value: p.name,
                                   child: Text(p.name),
                                 );
                               }),
