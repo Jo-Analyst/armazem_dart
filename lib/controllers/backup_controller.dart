@@ -120,10 +120,53 @@ class BackupController {
   }
 
   Future<void> restoreBackup() async {
-    statusMessage.value =
-        'A restauração usa o arquivo já salvo no diretório configurado.';
-    statusMessage.value =
-        'Restauração via arquivo local ainda precisa ser acionada pelo fluxo de backup do sistema.';
+    isLoading.value = true;
+    progress.value = 0.1;
+    statusMessage.value = 'Selecione o arquivo de backup (.db)...';
+    isError.value = false;
+    emailStatus.value = null;
+
+    try {
+      // Passo 1: Abrir seletor de arquivo para escolher o backup
+      progress.value = 0.3;
+      const XTypeGroup typeGroup = XTypeGroup(
+        label: 'Database files',
+        extensions: <String>['db'],
+      );
+      final XFile? file = await openFile(
+        acceptedTypeGroups: <XTypeGroup>[typeGroup],
+      );
+
+      if (file == null) {
+        statusMessage.value = 'Nenhum arquivo selecionado.';
+        isLoading.value = false;
+        progress.value = null;
+        return;
+      }
+
+      // Passo 2: Validar o arquivo selecionado
+      progress.value = 0.5;
+      final sourceFile = File(file.path);
+      if (!await sourceFile.exists()) {
+        throw Exception('Arquivo selecionado não encontrado: ${file.path}');
+      }
+
+      // Passo 3: Restaurar o backup
+      progress.value = 0.7;
+      statusMessage.value = 'Restaurando banco de dados...';
+      await _backupRepository.restaurarBackup(file.path);
+
+      progress.value = 1.0;
+      statusMessage.value = 'Backup restaurado com sucesso!';
+    } catch (e) {
+      isError.value = true;
+      statusMessage.value = 'Erro ao restaurar backup: $e';
+      progress.value = null;
+    } finally {
+      isLoading.value = false;
+      await Future.delayed(const Duration(milliseconds: 400));
+      progress.value = null;
+    }
   }
 
   /// Abre um seletor de diretório para o usuário escolher o local do backup.
