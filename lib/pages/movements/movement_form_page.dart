@@ -256,6 +256,7 @@ class _MovementFormPageState extends State<MovementFormPage> {
                               _selectedProduct != null;
 
                           return TextFormField(
+                            textCapitalization: TextCapitalization.words,
                             controller: textEditingController,
                             focusNode: focusNode,
                             decoration: InputDecoration(
@@ -597,6 +598,7 @@ class _MovementFormPageState extends State<MovementFormPage> {
 
               // Observação
               TextFormField(
+                textCapitalization: TextCapitalization.sentences,
                 controller: _obsController,
                 maxLines: 3,
                 decoration: InputDecoration(
@@ -612,7 +614,6 @@ class _MovementFormPageState extends State<MovementFormPage> {
                   }
                   return null;
                 },
-                onFieldSubmitted: (_) => _saveMovement(),
               ),
 
               const SizedBox(height: 24),

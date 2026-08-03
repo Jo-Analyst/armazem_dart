@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:signals_flutter/signals_flutter.dart';
 import '../../core/locator/locator.dart';
 import '../../controllers/product_controller.dart';
@@ -158,6 +159,7 @@ class _ProductFormPageState extends State<ProductFormPage> {
             children: [
               // Nome do Produto
               TextFormField(
+                textCapitalization: TextCapitalization.words,
                 controller: _nameController,
                 decoration: InputDecoration(
                   labelText: 'Nome do Produto *',
@@ -181,6 +183,11 @@ class _ProductFormPageState extends State<ProductFormPage> {
 
               // Volume (opcional)
               TextFormField(
+                // textCapitalization: TextCapitalization.characters,
+                inputFormatters: [
+                  FilteringTextInputFormatter.allow(RegExp(r'[A-Za-z0-9\s]')),
+                  UpperCaseTextFormatter(),
+                ],
                 controller: _volumeController,
                 decoration: InputDecoration(
                   labelText: 'Volume (opcional)',
@@ -252,6 +259,7 @@ class _ProductFormPageState extends State<ProductFormPage> {
                       child: TextFormField(
                         controller: _newCategoryController,
                         autofocus: true,
+                        textCapitalization: TextCapitalization.words,
                         decoration: InputDecoration(
                           labelText: 'Nome da Nova Categoria *',
                           border: const OutlineInputBorder(),
@@ -346,6 +354,19 @@ class _ProductFormPageState extends State<ProductFormPage> {
           ),
         ),
       ),
+    );
+  }
+}
+
+class UpperCaseTextFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    return TextEditingValue(
+      text: newValue.text.toUpperCase(),
+      selection: newValue.selection,
     );
   }
 }

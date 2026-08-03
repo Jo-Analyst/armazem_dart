@@ -91,6 +91,7 @@ class _CategoriesPageState extends State<CategoriesPage> {
                 key: _formKey,
                 child: TextFormField(
                   controller: _nameController,
+                  textCapitalization: TextCapitalization.words,
                   decoration: InputDecoration(
                     labelText: 'Nome da Categoria',
                     border: const OutlineInputBorder(),
