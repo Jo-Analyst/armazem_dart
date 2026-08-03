@@ -20,6 +20,7 @@ class _ProductFormPageState extends State<ProductFormPage> {
   final _nameController = TextEditingController();
   final _newCategoryController = TextEditingController();
   final _volumeController = TextEditingController();
+  final _volumeFocusNode = FocusNode();
 
   int? _selectedCategoryId;
   bool _addingNewCategory = false;
@@ -68,6 +69,7 @@ class _ProductFormPageState extends State<ProductFormPage> {
     _nameController.dispose();
     _newCategoryController.dispose();
     _volumeController.dispose();
+    _volumeFocusNode.dispose();
     super.dispose();
   }
 
@@ -189,6 +191,7 @@ class _ProductFormPageState extends State<ProductFormPage> {
                   UpperCaseTextFormatter(),
                 ],
                 controller: _volumeController,
+                focusNode: _volumeFocusNode,
                 decoration: InputDecoration(
                   labelText: 'Volume (opcional)',
                   hintText: 'Ex: 1 KG, 500 ML, 12 Unidades',
@@ -196,7 +199,10 @@ class _ProductFormPageState extends State<ProductFormPage> {
                   suffixIcon: _volumeController.text.isNotEmpty
                       ? IconButton(
                           icon: const Icon(Icons.clear),
-                          onPressed: () => _volumeController.clear(),
+                          onPressed: () {
+                            _volumeController.clear();
+                            _volumeFocusNode.requestFocus();
+                          },
                         )
                       : null,
                 ),

@@ -20,6 +20,7 @@ class _MovementFormPageState extends State<MovementFormPage> {
   final _controller = locator<MovementController>();
   final _formKey = GlobalKey<FormState>();
   final _quantityController = TextEditingController();
+  final _quantityFocusNode = FocusNode();
   final _obsController = TextEditingController();
 
   ProductModel? _selectedProduct;
@@ -87,6 +88,7 @@ class _MovementFormPageState extends State<MovementFormPage> {
   @override
   void dispose() {
     _quantityController.dispose();
+    _quantityFocusNode.dispose();
     _obsController.dispose();
     super.dispose();
   }
@@ -268,7 +270,7 @@ class _MovementFormPageState extends State<MovementFormPage> {
                                       icon: const Icon(Icons.clear),
                                       onPressed: () {
                                         textEditingController.clear();
-                                        focusNode.unfocus();
+                                        focusNode.requestFocus();
                                         setState(() {
                                           _selectedProduct = null;
                                           _saldoAtual = 0.0;
@@ -447,7 +449,10 @@ class _MovementFormPageState extends State<MovementFormPage> {
                         suffixIcon: _quantityController.text.isNotEmpty
                             ? IconButton(
                                 icon: const Icon(Icons.clear),
-                                onPressed: () => _quantityController.clear(),
+                                onPressed: () {
+                                  _quantityController.clear();
+                                  _quantityFocusNode.requestFocus();
+                                },
                               )
                             : null,
                       ),

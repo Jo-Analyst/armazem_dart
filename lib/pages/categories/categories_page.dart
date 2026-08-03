@@ -15,6 +15,7 @@ class _CategoriesPageState extends State<CategoriesPage> {
   final _controller = locator<CategoryController>();
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
+  final _nameFocusNode = FocusNode();
   CategoryModel? _selectedCategory;
 
   @override
@@ -28,6 +29,7 @@ class _CategoriesPageState extends State<CategoriesPage> {
   @override
   void dispose() {
     _nameController.dispose();
+    _nameFocusNode.dispose();
     super.dispose();
   }
 
@@ -91,6 +93,7 @@ class _CategoriesPageState extends State<CategoriesPage> {
                 key: _formKey,
                 child: TextFormField(
                   controller: _nameController,
+                  focusNode: _nameFocusNode,
                   textCapitalization: TextCapitalization.words,
                   decoration: InputDecoration(
                     labelText: 'Nome da Categoria',
@@ -100,6 +103,7 @@ class _CategoriesPageState extends State<CategoriesPage> {
                             icon: const Icon(Icons.clear),
                             onPressed: () {
                               _nameController.clear();
+                              _nameFocusNode.requestFocus();
                               setDialogState(() {});
                             },
                           )
