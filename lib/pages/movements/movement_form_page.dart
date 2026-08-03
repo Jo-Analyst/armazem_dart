@@ -276,11 +276,26 @@ class _MovementFormPageState extends State<MovementFormPage> {
                                     ),
                             ),
                             validator: (val) {
-                              if (val == null ||
-                                  val.trim().isEmpty ||
-                                  _selectedProduct == null) {
+                              if (val == null || val.trim().isEmpty) {
                                 return 'Selecione um produto';
                               }
+
+                              // Verificar se o texto digitado corresponde exatamente a um produto na lista
+                              final productList = _controller.products.value;
+                              final textLower = val.trim().toLowerCase();
+                              final productExists = productList.any(
+                                (p) =>
+                                    p.description!.toLowerCase() == textLower,
+                              );
+
+                              if (!productExists) {
+                                return 'Produto não encontrado na lista';
+                              }
+
+                              if (_selectedProduct == null) {
+                                return 'Selecione um produto';
+                              }
+
                               return null;
                             },
                             onFieldSubmitted: (_) => _saveMovement(),
