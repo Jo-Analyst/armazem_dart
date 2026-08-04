@@ -8,6 +8,18 @@ class CategoryRepository {
 
   Future<int> insert(CategoryModel category) async {
     final db = await _dbHelper.database;
+    
+    // Check if category with same name already exists
+    final existing = await db.query(
+      'categories',
+      where: 'name = ?',
+      whereArgs: [category.name.trim()],
+    );
+    
+    if (existing.isNotEmpty) {
+      throw Exception('Uma categoria com este nome já existe.');
+    }
+    
     return await db.insert('categories', category.toMap());
   }
 
@@ -22,6 +34,18 @@ class CategoryRepository {
 
   Future<int> update(CategoryModel category) async {
     final db = await _dbHelper.database;
+    
+    // Check if another category with same name already exists
+    final existing = await db.query(
+      'categories',
+      where: 'name = ? AND id != ?',
+      whereArgs: [category.name.trim(), category.id],
+    );
+    
+    if (existing.isNotEmpty) {
+      throw Exception('Uma categoria com este nome já existe.');
+    }
+    
     return await db.update(
       'categories',
       category.toMap(),
