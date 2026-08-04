@@ -125,4 +125,27 @@ class ProductRepository {
     final db = await _dbHelper.database;
     return await db.delete('products', where: 'id = ?', whereArgs: [id]);
   }
+
+  Future<bool> existsByNameAndVolume(String name, String? volume, {int? excludeId}) async {
+    final db = await _dbHelper.database;
+    
+    String query = 'SELECT COUNT(*) FROM products WHERE LOWER(name) = LOWER(?)';
+    List<dynamic> args = [name.trim()];
+    
+    if (volume != null && volume.trim().isNotEmpty) {
+      query += ' AND LOWER(volume) = LOWER(?)';
+      args.add(volume.trim());
+    } else {
+      query += ' AND (volume IS NULL OR volume = "")';
+    }
+    
+    if (excludeId != null) {
+      query += ' AND id != ?';
+      args.add(excludeId);
+    }
+    
+    final result = await db.rawQuery(query, args);
+    final count = result.first['COUNT(*)'] as int;
+    return count > 0;
+  }
 }
