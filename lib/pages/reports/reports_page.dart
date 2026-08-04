@@ -41,7 +41,7 @@ class _ReportsPageState extends State<ReportsPage> {
   void _onScroll() {
     if (!_scrollController.hasClients) return;
     if (_scrollController.position.extentAfter < 150 &&
-        _controller.hasMoreReport &&
+        _controller.hasMoreReport.value &&
         !_controller.isLoading.value &&
         !_controller.isLoadingMoreReport) {
       _controller.loadReport(reset: false);
@@ -393,108 +393,108 @@ class _ReportsPageState extends State<ReportsPage> {
                   child: _controller.isLoading.value
                       ? const Center(child: CircularProgressIndicator())
                       : list.isEmpty
-                          ? Center(
-                              child: Text(
-                                'Nenhuma movimentação no período.',
-                                style: theme.textTheme.titleMedium?.copyWith(
-                                  color: theme.hintColor,
+                      ? Center(
+                          child: Text(
+                            'Nenhuma movimentação no período.',
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              color: theme.hintColor,
+                            ),
+                          ),
+                        )
+                      : ListView.builder(
+                          controller: _scrollController,
+                          // 2. ALTERADO: Adicionado bottom: 80.0 para dar o recuo necessário sobre o FAB
+                          padding: const EdgeInsets.only(
+                            left: 16.0,
+                            right: 16.0,
+                            top: 0.0,
+                            bottom: 80.0,
+                          ),
+                          itemCount:
+                              list.length +
+                              (_controller.hasMoreReport.value ? 1 : 0),
+                          itemBuilder: (context, index) {
+                            if (index >= list.length) {
+                              return Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 16.0,
+                                ),
+                                child: Center(
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: const [
+                                      CircularProgressIndicator(),
+                                      SizedBox(height: 8),
+                                      Text('Carregando mais registros...'),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            }
+                            final mov = list[index];
+                            final isEntrada = mov.isEntrada;
+                            final dtE = mov.dataEntry.split('T')[0];
+                            final dateE = dtE.isNotEmpty
+                                ? _dateFormat
+                                      .format(
+                                        DateTime(
+                                          int.parse(dtE.split('-')[0]),
+                                          int.parse(dtE.split('-')[1]),
+                                          int.parse(dtE.split('-')[2]),
+                                        ),
+                                      )
+                                      .split(' ')[0]
+                                : '';
+
+                            final dataS = mov.dataExit != null
+                                ? DateTime.tryParse(mov.dataExit!)
+                                : null;
+
+                            return Card(
+                              margin: const EdgeInsets.only(bottom: 8.0),
+                              child: ListTile(
+                                leading: CircleAvatar(
+                                  backgroundColor: isEntrada
+                                      ? Colors.green.shade50
+                                      : Colors.red.shade50,
+                                  child: Icon(
+                                    isEntrada
+                                        ? Icons.arrow_downward
+                                        : Icons.arrow_upward,
+                                    color: isEntrada
+                                        ? Colors.green
+                                        : Colors.red,
+                                  ),
+                                ),
+                                title: Text(
+                                  '${mov.productName} (${mov.productVolume})',
+                                ),
+                                subtitle: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    if (dateE.isNotEmpty)
+                                      Text('Entrada: $dateE'),
+                                    if (dataS != null)
+                                      Text(
+                                        'Saída: ${_dateFormat.format(dataS).split(' ')[0]}',
+                                      ),
+                                    if (mov.observation != null)
+                                      Text('Obs: ${mov.observation}'),
+                                  ],
+                                ),
+                                trailing: Text(
+                                  '${isEntrada ? "+" : "-"}${mov.quantity} ${mov.unitOfMeasurement}',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: isEntrada
+                                        ? Colors.green
+                                        : Colors.red,
+                                  ),
                                 ),
                               ),
-                            )
-                          : ListView.builder(
-                              controller: _scrollController,
-                              // 2. ALTERADO: Adicionado bottom: 80.0 para dar o recuo necessário sobre o FAB
-                              padding: const EdgeInsets.only(
-                                left: 16.0,
-                                right: 16.0,
-                                top: 0.0,
-                                bottom: 80.0,
-                              ),
-                              itemCount: list.length +
-                                  (_controller.hasMoreReport ? 1 : 0),
-                              itemBuilder: (context, index) {
-                                if (index >= list.length) {
-                                  return Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                      vertical: 16.0,
-                                    ),
-                                    child: Center(
-                                      child: Column(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: const [
-                                          CircularProgressIndicator(),
-                                          SizedBox(height: 8),
-                                          Text('Carregando mais registros...'),
-                                        ],
-                                      ),
-                                    ),
-                                  );
-                                }
-                                final mov = list[index];
-                                final isEntrada = mov.isEntrada;
-                                final dtE = mov.dataEntry.split('T')[0];
-                                final dateE = dtE.isNotEmpty
-                                    ? _dateFormat
-                                        .format(
-                                          DateTime(
-                                            int.parse(dtE.split('-')[0]),
-                                            int.parse(dtE.split('-')[1]),
-                                            int.parse(dtE.split('-')[2]),
-                                          ),
-                                        )
-                                        .split(' ')[0]
-                                    : '';
-
-                                final dataS = mov.dataExit != null
-                                    ? DateTime.tryParse(mov.dataExit!)
-                                    : null;
-
-                                return Card(
-                                  margin: const EdgeInsets.only(bottom: 8.0),
-                                  child: ListTile(
-                                    leading: CircleAvatar(
-                                      backgroundColor: isEntrada
-                                          ? Colors.green.shade50
-                                          : Colors.red.shade50,
-                                      child: Icon(
-                                        isEntrada
-                                            ? Icons.arrow_downward
-                                            : Icons.arrow_upward,
-                                        color: isEntrada
-                                            ? Colors.green
-                                            : Colors.red,
-                                      ),
-                                    ),
-                                    title: Text(
-                                      '${mov.productName} (${mov.productVolume})',
-                                    ),
-                                    subtitle: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        if (dateE.isNotEmpty)
-                                          Text('Entrada: $dateE'),
-                                        if (dataS != null)
-                                          Text(
-                                            'Saída: ${_dateFormat.format(dataS).split(' ')[0]}',
-                                          ),
-                                        if (mov.observation != null)
-                                          Text('Obs: ${mov.observation}'),
-                                      ],
-                                    ),
-                                    trailing: Text(
-                                      '${isEntrada ? "+" : "-"}${mov.quantity} ${mov.unitOfMeasurement}',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        color: isEntrada
-                                            ? Colors.green
-                                            : Colors.red,
-                                      ),
-                                    ),
-                                  ),
-                                );
-                              },
-                            ),
+                            );
+                          },
+                        ),
                 ),
               ],
             );

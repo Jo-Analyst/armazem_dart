@@ -39,7 +39,7 @@ class _ProductsPageState extends State<ProductsPage> {
   void _onScroll() {
     if (!_scrollController.hasClients) return;
     if (_scrollController.position.extentAfter < 150 &&
-        _controller.hasMoreProducts &&
+        _controller.hasMoreProducts.value &&
         !_controller.isLoading.value &&
         !_controller.isLoadingMoreProducts) {
       _controller.loadProducts(reset: false);
@@ -252,7 +252,8 @@ class _ProductsPageState extends State<ProductsPage> {
                       bottom: 80.0,
                     ),
                     itemCount:
-                        list.length + (_controller.hasMoreProducts ? 1 : 0),
+                        list.length +
+                        (_controller.hasMoreProducts.value ? 1 : 0),
                     itemBuilder: (context, index) {
                       if (index >= list.length) {
                         return Padding(

@@ -38,7 +38,7 @@ class _MovementsPageState extends State<MovementsPage> {
   void _onScroll() {
     if (!_scrollController.hasClients) return;
     if (_scrollController.position.extentAfter < 150 &&
-        _controller.hasMoreMovements &&
+        _controller.hasMoreMovements.value &&
         !_controller.isLoading.value &&
         !_controller.isLoadingMoreMovements) {
       _controller.loadMovements(reset: false);
@@ -206,7 +206,8 @@ class _MovementsPageState extends State<MovementsPage> {
                       bottom: 80.0,
                     ),
                     itemCount:
-                        list.length + (_controller.hasMoreMovements ? 1 : 0),
+                        list.length +
+                        (_controller.hasMoreMovements.value ? 1 : 0),
                     itemBuilder: (context, index) {
                       if (index >= list.length) {
                         return Padding(
@@ -305,8 +306,10 @@ class _MovementsPageState extends State<MovementsPage> {
                             ],
                           ),
                           trailing: _selectedMovement?.id == mov.id
-                              ? const Icon(Icons.check_circle,
-                                  color: Colors.blue)
+                              ? const Icon(
+                                  Icons.check_circle,
+                                  color: Colors.blue,
+                                )
                               : Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [

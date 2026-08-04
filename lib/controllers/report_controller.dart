@@ -77,10 +77,9 @@ class ReportController {
 
   static const int _pageSize = 10;
   int _reportPage = 0;
-  bool _hasMoreReport = true;
+  final hasMoreReport = signal(true);
   bool _isLoadingMoreReport = false;
 
-  bool get hasMoreReport => _hasMoreReport;
   bool get isLoadingMoreReport => _isLoadingMoreReport;
 
   final startDate = signal<DateTime>(
@@ -99,7 +98,7 @@ class ReportController {
   void resetFilters() {
     selectedProductName.value = null;
     _reportPage = 0;
-    _hasMoreReport = true;
+    hasMoreReport.value = true;
     _isLoadingMoreReport = false;
     startDate.value = DateTime(DateTime.now().year, DateTime.now().month, 1);
     endDate.value = DateTime(DateTime.now().year, DateTime.now().month + 1, 0);
@@ -117,11 +116,11 @@ class ReportController {
   Future<void> loadReport({bool reset = true}) async {
     if (reset) {
       _reportPage = 0;
-      _hasMoreReport = true;
+      hasMoreReport.value = true;
       movements.value = [];
     }
 
-    if (!_hasMoreReport || _isLoadingMoreReport) return;
+    if (!hasMoreReport.value || _isLoadingMoreReport) return;
 
     if (reset) {
       isLoading.value = true;
@@ -149,8 +148,8 @@ class ReportController {
         movements.value = [...movements.value, ...list];
       }
 
-      _hasMoreReport = list.length == _pageSize;
-      if (_hasMoreReport) {
+      hasMoreReport.value = list.length == _pageSize;
+      if (hasMoreReport.value) {
         _reportPage++;
       }
     } catch (e) {

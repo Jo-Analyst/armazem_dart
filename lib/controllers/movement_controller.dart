@@ -19,10 +19,9 @@ class MovementController {
 
   static const int _pageSize = 10;
   int _movementPage = 0;
-  bool _hasMoreMovements = true;
+  final hasMoreMovements = signal(true);
   bool _isLoadingMoreMovements = false;
 
-  bool get hasMoreMovements => _hasMoreMovements;
   bool get isLoadingMoreMovements => _isLoadingMoreMovements;
 
   Future<void> init() async {
@@ -42,11 +41,11 @@ class MovementController {
   Future<void> loadMovements({bool reset = true}) async {
     if (reset) {
       _movementPage = 0;
-      _hasMoreMovements = true;
+      hasMoreMovements.value = true;
       movements.value = [];
     }
 
-    if (!_hasMoreMovements || _isLoadingMoreMovements) return;
+    if (!hasMoreMovements.value || _isLoadingMoreMovements) return;
 
     if (reset) {
       isLoading.value = true;
@@ -67,8 +66,8 @@ class MovementController {
         movements.value = [...movements.value, ...list];
       }
 
-      _hasMoreMovements = list.length == _pageSize;
-      if (_hasMoreMovements) {
+      hasMoreMovements.value = list.length == _pageSize;
+      if (hasMoreMovements.value) {
         _movementPage++;
       }
     } catch (e) {

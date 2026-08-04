@@ -22,10 +22,9 @@ class ProductController {
 
   static const int _pageSize = 10;
   int _productPage = 0;
-  bool _hasMoreProducts = true;
+  final hasMoreProducts = signal(true);
   bool _isLoadingMoreProducts = false;
 
-  bool get hasMoreProducts => _hasMoreProducts;
   bool get isLoadingMoreProducts => _isLoadingMoreProducts;
 
   Future<void> init() async {
@@ -51,11 +50,11 @@ class ProductController {
   Future<void> loadProducts({bool reset = true}) async {
     if (reset) {
       _productPage = 0;
-      _hasMoreProducts = true;
+      hasMoreProducts.value = true;
       products.value = [];
     }
 
-    if (!_hasMoreProducts || _isLoadingMoreProducts) return;
+    if (!hasMoreProducts.value || _isLoadingMoreProducts) return;
 
     if (reset) {
       isLoading.value = true;
@@ -78,8 +77,8 @@ class ProductController {
         products.value = [...products.value, ...list];
       }
 
-      _hasMoreProducts = list.length == _pageSize;
-      if (_hasMoreProducts) {
+      hasMoreProducts.value = list.length == _pageSize;
+      if (hasMoreProducts.value) {
         _productPage++;
       }
     } catch (e) {
