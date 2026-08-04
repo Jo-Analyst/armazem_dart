@@ -1,5 +1,6 @@
 import 'package:signals_flutter/signals_flutter.dart';
 import '../core/database/change_tracker.dart';
+import '../core/utils/error_utils.dart';
 import '../models/category_model.dart';
 import '../repositories/category_repository.dart';
 
@@ -20,7 +21,7 @@ class CategoryController {
       final list = await _repository.getAll();
       categories.value = list;
     } catch (e) {
-      error.value = e.toString();
+      error.value = cleanErrorMessage(e);
     } finally {
       isLoading.value = false;
     }
@@ -28,47 +29,20 @@ class CategoryController {
 
   Future<void> addCategory(String name) async {
     if (name.trim().isEmpty) return;
-    isLoading.value = true;
-    error.value = null;
-    try {
-      await _repository.insert(CategoryModel(name: name.trim()));
-      _changeTracker.markChanged();
-      await loadCategories();
-    } catch (e) {
-      error.value = e.toString();
-      rethrow;
-    } finally {
-      isLoading.value = false;
-    }
+    await _repository.insert(CategoryModel(name: name.trim()));
+    _changeTracker.markChanged();
+    await loadCategories();
   }
 
   Future<void> editCategory(CategoryModel category) async {
-    isLoading.value = true;
-    error.value = null;
-    try {
-      await _repository.update(category);
-      _changeTracker.markChanged();
-      await loadCategories();
-    } catch (e) {
-      error.value = e.toString();
-      rethrow;
-    } finally {
-      isLoading.value = false;
-    }
+    await _repository.update(category);
+    _changeTracker.markChanged();
+    await loadCategories();
   }
 
   Future<void> deleteCategory(int id) async {
-    isLoading.value = true;
-    error.value = null;
-    try {
-      await _repository.delete(id);
-      _changeTracker.markChanged();
-      await loadCategories();
-    } catch (e) {
-      error.value = e.toString();
-      rethrow;
-    } finally {
-      isLoading.value = false;
-    }
+    await _repository.delete(id);
+    _changeTracker.markChanged();
+    await loadCategories();
   }
 }

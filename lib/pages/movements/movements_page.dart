@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:signals_flutter/signals_flutter.dart';
 import '../../core/locator/locator.dart';
 import '../../core/routes/app_routes.dart';
+import '../../core/utils/error_utils.dart';
 import '../../controllers/movement_controller.dart';
 import '../../models/movement_model.dart';
 
@@ -67,11 +68,12 @@ class _MovementsPageState extends State<MovementsPage> {
               style: FilledButton.styleFrom(backgroundColor: Colors.red),
               onPressed: () async {
                 final nav = Navigator.of(context);
+                final messenger = ScaffoldMessenger.of(context);
                 try {
                   await _controller.deleteMovement(movement.id!);
                   if (!mounted) return;
                   nav.pop();
-                  ScaffoldMessenger.of(context).showSnackBar(
+                  messenger.showSnackBar(
                     const SnackBar(
                       content: Text('Movimentação excluída.'),
                       backgroundColor: Colors.green,
@@ -80,11 +82,9 @@ class _MovementsPageState extends State<MovementsPage> {
                 } catch (e) {
                   if (!mounted) return;
                   nav.pop();
-                  ScaffoldMessenger.of(context).showSnackBar(
+                  messenger.showSnackBar(
                     SnackBar(
-                      content: Text(
-                        e.toString().replaceFirst('Exception: ', ''),
-                      ),
+                      content: Text(cleanErrorMessage(e)),
                       backgroundColor: Colors.red,
                     ),
                   );
@@ -166,7 +166,7 @@ class _MovementsPageState extends State<MovementsPage> {
                   if (_controller.error.value != null) {
                     return Center(
                       child: Text(
-                        'Erro: ${_controller.error.value}',
+                        'Erro: ${cleanErrorMessage(_controller.error.value)}',
                         style: const TextStyle(color: Colors.red),
                       ),
                     );

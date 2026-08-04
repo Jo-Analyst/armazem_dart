@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:signals_flutter/signals_flutter.dart';
 import '../../core/locator/locator.dart';
+import '../../core/utils/error_utils.dart';
 import '../../controllers/product_controller.dart';
 import '../../models/product_model.dart';
 
@@ -135,7 +136,10 @@ class _ProductFormPageState extends State<ProductFormPage> {
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString()), backgroundColor: Colors.red),
+        SnackBar(
+          content: Text(cleanErrorMessage(e)),
+          backgroundColor: Colors.red,
+        ),
       );
     } finally {
       if (mounted) {
@@ -175,7 +179,7 @@ class _ProductFormPageState extends State<ProductFormPage> {
                 ),
                 validator: (val) {
                   if (val == null || val.trim().isEmpty) {
-                    return 'Por favor, insira o name';
+                    return 'Por favor, insira o nome';
                   }
                   return null;
                 },

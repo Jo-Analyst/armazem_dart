@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:signals_flutter/signals_flutter.dart';
 import '../../core/locator/locator.dart';
 import '../../core/routes/app_routes.dart';
+import '../../core/utils/error_utils.dart';
 import '../../controllers/product_controller.dart';
 import '../../models/product_model.dart';
 import 'widgets/product_item_card.dart';
@@ -64,10 +65,12 @@ class _ProductsPageState extends State<ProductsPage> {
             FilledButton(
               style: FilledButton.styleFrom(backgroundColor: Colors.red),
               onPressed: () async {
+                final nav = Navigator.of(context);
+                final messenger = ScaffoldMessenger.of(context);
                 await _controller.deleteProduct(product.id!);
                 if (!mounted) return;
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
+                nav.pop();
+                messenger.showSnackBar(
                   const SnackBar(content: Text('Produto excluído.')),
                 );
               },
@@ -212,7 +215,7 @@ class _ProductsPageState extends State<ProductsPage> {
                   if (_controller.error.value != null) {
                     return Center(
                       child: Text(
-                        'Erro: ${_controller.error.value}',
+                        'Erro: ${cleanErrorMessage(_controller.error.value)}',
                         style: const TextStyle(color: Colors.red),
                       ),
                     );

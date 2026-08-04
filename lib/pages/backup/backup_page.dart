@@ -322,6 +322,9 @@ class _BackupPageState extends State<BackupPage> {
                                         SnackBar(
                                           content: Text(
                                             'Diretório configurado: $selected',
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                            ),
                                           ),
                                           backgroundColor: Colors.green,
                                         ),

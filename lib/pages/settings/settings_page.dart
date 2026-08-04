@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:signals_flutter/signals_flutter.dart';
 import '../../core/locator/locator.dart';
+import '../../core/utils/error_utils.dart';
 import '../../controllers/settings_controller.dart';
 
 class SettingsPage extends StatefulWidget {
@@ -71,7 +72,7 @@ class _SettingsPageState extends State<SettingsPage> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Erro ao salvar: $e'),
+          content: Text('Erro ao salvar: ${cleanErrorMessage(e)}'),
           backgroundColor: Colors.red,
         ),
       );

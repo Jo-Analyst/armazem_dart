@@ -1,4 +1,5 @@
 import 'package:signals_flutter/signals_flutter.dart';
+import '../core/utils/error_utils.dart';
 import '../models/movement_model.dart';
 import '../models/product_model.dart';
 import '../repositories/movement_repository.dart';
@@ -153,7 +154,7 @@ class ReportController {
         _reportPage++;
       }
     } catch (e) {
-      error.value = e.toString();
+      error.value = cleanErrorMessage(e);
     } finally {
       if (reset) {
         isLoading.value = false;

@@ -1,5 +1,6 @@
 import 'package:signals_flutter/signals_flutter.dart';
 import '../core/database/change_tracker.dart';
+import '../core/utils/error_utils.dart';
 import '../models/movement_model.dart';
 import '../models/product_model.dart';
 import '../repositories/movement_repository.dart';
@@ -34,7 +35,7 @@ class MovementController {
       final list = await _productRepository.getAll();
       products.value = list;
     } catch (e) {
-      error.value = e.toString();
+      error.value = cleanErrorMessage(e);
     }
   }
 
@@ -71,7 +72,7 @@ class MovementController {
         _movementPage++;
       }
     } catch (e) {
-      error.value = e.toString();
+      error.value = cleanErrorMessage(e);
     } finally {
       if (reset) {
         isLoading.value = false;
@@ -97,94 +98,67 @@ class MovementController {
     String? dataExit,
     String? observation,
   }) async {
-    isLoading.value = true;
-    error.value = null;
-    try {
-      // Validação prévia de saldo na UI (antes de chegar ao repositório)
-      if (type == 'SAIDA') {
-        final saldo = await getSaldoProduto(productId);
-        if (saldo <= 0) {
-          throw Exception(
-            'Saldo zerado. Registre uma nova ENTRADA antes de registrar saída.',
-          );
-        }
+    // Validação prévia de saldo na UI (antes de chegar ao repositório)
+    if (type == 'SAIDA') {
+      final saldo = await getSaldoProduto(productId);
+      if (saldo <= 0) {
+        throw Exception(
+          'Saldo zerado. Registre uma nova ENTRADA antes de registrar saída.',
+        );
       }
-
-      final mov = MovementModel(
-        productId: productId,
-        type: type,
-        quantity: quantity,
-        unitOfMeasurement: unitOfMeasurement,
-        dataEntry: dataEntry,
-        dataExit: dataExit,
-        observation: observation,
-      );
-
-      await _movementRepository.createMovement(mov);
-      _changeTracker.markChanged();
-      await loadMovements();
-      await loadProducts(); // Atualiza saldo exibido nos produtos
-    } catch (e) {
-      error.value = e.toString().replaceFirst('Exception: ', '');
-      rethrow;
-    } finally {
-      isLoading.value = false;
     }
+
+    final mov = MovementModel(
+      productId: productId,
+      type: type,
+      quantity: quantity,
+      unitOfMeasurement: unitOfMeasurement,
+      dataEntry: dataEntry,
+      dataExit: dataExit,
+      observation: observation,
+    );
+
+    await _movementRepository.createMovement(mov);
+    _changeTracker.markChanged();
+    await loadMovements();
+    await loadProducts(); // Atualiza saldo exibido nos produtos
   }
 
   /// Atualiza uma movimentação existente com as mesmas validações de negócio.
   /// Lança [Exception] em caso de violação de regras.
   Future<void> updateMovement(MovementModel movement) async {
-    isLoading.value = true;
-    error.value = null;
-    try {
-      if (movement.id == null) {
-        throw Exception('ID da movimentação é obrigatório para atualização.');
-      }
-
-      // Validação prévia de saldo na UI (antes de chegar ao repositório)
-      if (movement.type == 'SAIDA') {
-        final saldo = await getSaldoProduto(movement.productId);
-        final movAtual = movements.value
-            .where((m) => m.id == movement.id)
-            .firstOrNull;
-        double saldoDisponivel = saldo;
-        if (movAtual != null && movAtual.type == 'SAIDA') {
-          saldoDisponivel += movAtual.quantity;
-        }
-        if (saldoDisponivel <= 0) {
-          throw Exception(
-            'Saldo zerado. Registre uma nova ENTRADA antes de registrar saída.',
-          );
-        }
-      }
-
-      await _movementRepository.update(movement);
-      _changeTracker.markChanged();
-      await loadMovements();
-      await loadProducts(); // Atualiza saldo exibido nos produtos
-    } catch (e) {
-      error.value = e.toString().replaceFirst('Exception: ', '');
-      rethrow;
-    } finally {
-      isLoading.value = false;
+    if (movement.id == null) {
+      throw Exception('ID da movimentação é obrigatório para atualização.');
     }
+
+    // Validação prévia de saldo na UI (antes de chegar ao repositório)
+    if (movement.type == 'SAIDA') {
+      final saldo = await getSaldoProduto(movement.productId);
+      final movAtual = movements.value
+          .where((m) => m.id == movement.id)
+          .firstOrNull;
+      double saldoDisponivel = saldo;
+      if (movAtual != null && movAtual.type == 'SAIDA') {
+        saldoDisponivel += movAtual.quantity;
+      }
+      if (saldoDisponivel <= 0) {
+        throw Exception(
+          'Saldo zerado. Registre uma nova ENTRADA antes de registrar saída.',
+        );
+      }
+    }
+
+    await _movementRepository.update(movement);
+    _changeTracker.markChanged();
+    await loadMovements();
+    await loadProducts(); // Atualiza saldo exibido nos produtos
   }
 
   /// Remove uma movimentação pelo ID.
   Future<void> deleteMovement(int id) async {
-    isLoading.value = true;
-    error.value = null;
-    try {
-      await _movementRepository.delete(id);
-      _changeTracker.markChanged();
-      await loadMovements();
-      await loadProducts(); // Atualiza saldo exibido nos produtos
-    } catch (e) {
-      error.value = e.toString().replaceFirst('Exception: ', '');
-      rethrow;
-    } finally {
-      isLoading.value = false;
-    }
+    await _movementRepository.delete(id);
+    _changeTracker.markChanged();
+    await loadMovements();
+    await loadProducts(); // Atualiza saldo exibido nos produtos
   }
 }

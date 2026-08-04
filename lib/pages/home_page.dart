@@ -8,6 +8,8 @@ import 'package:window_manager/window_manager.dart';
 import '../controllers/backup_controller.dart';
 import '../core/locator/locator.dart';
 import '../controllers/settings_controller.dart';
+import '../core/routes/app_routes.dart';
+import '../core/utils/error_utils.dart';
 import 'categories/categories_page.dart';
 import 'products/products_page.dart';
 import 'movements/movements_page.dart';
@@ -184,21 +186,25 @@ class _HomePageState extends State<HomePage> with WindowListener {
       },
     );
 
+    final nav = Navigator.of(context, rootNavigator: true);
     try {
       await _backupController.executarBackupSeHouverMudanca();
       if (!mounted) return;
       await Future.delayed(const Duration(milliseconds: 600));
       if (!mounted) return;
-      Navigator.of(context, rootNavigator: true).pop();
+      nav.pop();
       if (fecharAposBackup) {
         _fecharAplicativo();
       }
     } catch (e) {
       if (!mounted) return;
-      Navigator.of(context, rootNavigator: true).pop();
+      nav.pop();
       messenger.showSnackBar(
         SnackBar(
-          content: Text('Não foi possível concluir o backup ao sair: $e'),
+          content: Text(
+            'Não foi possível concluir o backup ao sair: ${cleanErrorMessage(e)}',
+            style: TextStyle(color: Colors.white),
+          ),
           backgroundColor: Colors.red,
         ),
       );

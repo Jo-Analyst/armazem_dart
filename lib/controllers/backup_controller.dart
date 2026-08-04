@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:file_selector/file_selector.dart';
 import 'package:signals_flutter/signals_flutter.dart';
 import '../core/database/change_tracker.dart';
+import '../core/utils/error_utils.dart';
 import '../repositories/backup_repository.dart';
 import 'settings_controller.dart';
 
@@ -90,7 +91,8 @@ class BackupController {
           emailStatus.value =
               '✅ Backup enviado para ${_settingsController.emailDestino.value}';
         } catch (e) {
-          emailStatus.value = '⚠️ Falha ao enviar e-mail: ${e.toString()}';
+          emailStatus.value =
+              '⚠️ Falha ao enviar e-mail: ${cleanErrorMessage(e)}';
         }
       } else if (!temConexao) {
         emailStatus.value = 'Sem internet — e-mail não enviado.';
@@ -110,7 +112,7 @@ class BackupController {
       _changeTracker.clearPendingBackup();
     } catch (e) {
       isError.value = true;
-      statusMessage.value = 'Erro ao exportar backup: $e';
+      statusMessage.value = 'Erro ao exportar backup: ${cleanErrorMessage(e)}';
       progress.value = null;
     } finally {
       isLoading.value = false;
@@ -160,7 +162,7 @@ class BackupController {
       statusMessage.value = 'Backup restaurado com sucesso!';
     } catch (e) {
       isError.value = true;
-      statusMessage.value = 'Erro ao restaurar backup: $e';
+      statusMessage.value = 'Erro ao restaurar backup: ${cleanErrorMessage(e)}';
       progress.value = null;
     } finally {
       isLoading.value = false;

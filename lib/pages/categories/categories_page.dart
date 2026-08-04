@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:signals_flutter/signals_flutter.dart';
 import '../../core/locator/locator.dart';
+import '../../core/utils/error_utils.dart';
 import '../../controllers/category_controller.dart';
 import '../../models/category_model.dart';
 
@@ -33,11 +34,10 @@ class _CategoriesPageState extends State<CategoriesPage> {
     super.dispose();
   }
 
-  Future<void> addCategory(
-    CategoryModel? category,
-    void Function() onTextChanged,
-  ) async {
+  Future<void> addCategory(CategoryModel? category) async {
     if (_formKey.currentState!.validate()) {
+      final navigator = Navigator.of(context);
+      final messenger = ScaffoldMessenger.of(context);
       try {
         if (category == null) {
           await _controller.addCategory(_nameController.text);
@@ -46,10 +46,9 @@ class _CategoriesPageState extends State<CategoriesPage> {
             CategoryModel(id: category.id, name: _nameController.text),
           );
         }
-        _nameController.removeListener(onTextChanged);
         if (!mounted) return;
-        Navigator.pop(context);
-        ScaffoldMessenger.of(context).showSnackBar(
+        navigator.pop();
+        messenger.showSnackBar(
           SnackBar(
             content: Text(
               category == null
@@ -60,9 +59,12 @@ class _CategoriesPageState extends State<CategoriesPage> {
         );
       } catch (e) {
         if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
+        messenger.showSnackBar(
           SnackBar(
-            content: Text(e.toString().replaceAll('Exception: ', '')),
+            content: Text(
+              cleanErrorMessage(e),
+              style: TextStyle(color: Colors.white),
+            ),
             backgroundColor: Colors.red,
           ),
         );
@@ -78,13 +80,6 @@ class _CategoriesPageState extends State<CategoriesPage> {
       builder: (context) {
         return StatefulBuilder(
           builder: (context, setDialogState) {
-            // Listener temporário para atualizar o estado interno do Dialog ao digitar/apagar
-            void onTextChanged() {
-              setDialogState(() {});
-            }
-
-            _nameController.addListener(onTextChanged);
-
             return AlertDialog(
               title: Text(
                 category == null ? 'Nova Categoria' : 'Editar Categoria',
@@ -109,26 +104,24 @@ class _CategoriesPageState extends State<CategoriesPage> {
                           )
                         : null,
                   ),
+                  onChanged: (_) => setDialogState(() {}),
                   validator: (val) {
                     if (val == null || val.trim().isEmpty) {
-                      return 'Por favor, insira o name';
+                      return 'Por favor, insira o nome';
                     }
                     return null;
                   },
-                  onFieldSubmitted: (_) => addCategory(category, onTextChanged),
+                  onFieldSubmitted: (_) => addCategory(category),
                 ),
               ),
               actions: [
                 TextButton(
-                  onPressed: () {
-                    _nameController.removeListener(onTextChanged);
-                    Navigator.pop(context);
-                  },
+                  onPressed: () => Navigator.pop(context),
                   child: const Text('Cancelar'),
                 ),
                 ElevatedButton(
                   onPressed: () async {
-                    await addCategory(category!, onTextChanged);
+                    await addCategory(category);
                   },
                   child: const Text('Salvar'),
                 ),
@@ -160,19 +153,21 @@ class _CategoriesPageState extends State<CategoriesPage> {
                 foregroundColor: Colors.white,
               ),
               onPressed: () async {
+                final navigator = Navigator.of(context);
+                final messenger = ScaffoldMessenger.of(context);
                 try {
                   await _controller.deleteCategory(category.id!);
                   if (!mounted) return;
-                  Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
+                  navigator.pop();
+                  messenger.showSnackBar(
                     const SnackBar(
                       content: Text('Categoria excluída com sucesso!'),
                     ),
                   );
                 } catch (e) {
                   if (!mounted) return;
-                  Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
+                  navigator.pop();
+                  messenger.showSnackBar(
                     const SnackBar(
                       content: Text(
                         'Não é possível excluir: existem produtos associados a esta categoria.',
@@ -237,7 +232,7 @@ class _CategoriesPageState extends State<CategoriesPage> {
           if (_controller.error.value != null) {
             return Center(
               child: Text(
-                'Erro ao carregar categorias: ${_controller.error.value}',
+                'Erro ao carregar categorias: ${cleanErrorMessage(_controller.error.value)}',
                 style: const TextStyle(color: Colors.red),
               ),
             );

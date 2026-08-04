@@ -109,29 +109,20 @@ class ProductController {
     required int categoryId,
     String? volume,
   }) async {
-    isLoading.value = true;
-    error.value = null;
-    try {
-      // Verifica se já existe produto com mesmo nome e volume
-      final exists = await _productRepository.existsByNameAndVolume(name, volume);
-      if (exists) {
-        throw Exception('Já existe um produto com este nome e volume.');
-      }
-      
-      final prod = ProductModel(
-        name: name,
-        categoryId: categoryId,
-        volume: volume?.trim().isEmpty == true ? null : volume?.trim(),
-      );
-      await _productRepository.insert(prod);
-      _changeTracker.markChanged();
-      await loadProducts();
-    } catch (e) {
-      error.value = e.toString();
-      rethrow;
-    } finally {
-      isLoading.value = false;
+    // Verifica se já existe produto com mesmo nome e volume
+    final exists = await _productRepository.existsByNameAndVolume(name, volume);
+    if (exists) {
+      throw Exception('Já existe um produto com este nome e volume.');
     }
+    
+    final prod = ProductModel(
+      name: name,
+      categoryId: categoryId,
+      volume: volume?.trim().isEmpty == true ? null : volume?.trim(),
+    );
+    await _productRepository.insert(prod);
+    _changeTracker.markChanged();
+    await loadProducts();
   }
 
   /// Cria ou seleciona uma categoria inline no formulário de produto.
@@ -150,42 +141,24 @@ class ProductController {
   }
 
   Future<void> editProduct(ProductModel product) async {
-    isLoading.value = true;
-    error.value = null;
-    try {
-      // Verifica se já existe produto com mesmo nome e volume (excluindo o próprio)
-      final exists = await _productRepository.existsByNameAndVolume(
-        product.name,
-        product.volume,
-        excludeId: product.id,
-      );
-      if (exists) {
-        throw Exception('Já existe um produto com este nome e volume.');
-      }
-      
-      await _productRepository.update(product);
-      _changeTracker.markChanged();
-      await loadProducts();
-    } catch (e) {
-      error.value = e.toString();
-      rethrow;
-    } finally {
-      isLoading.value = false;
+    // Verifica se já existe produto com mesmo nome e volume (excluindo o próprio)
+    final exists = await _productRepository.existsByNameAndVolume(
+      product.name,
+      product.volume,
+      excludeId: product.id,
+    );
+    if (exists) {
+      throw Exception('Já existe um produto com este nome e volume.');
     }
+    
+    await _productRepository.update(product);
+    _changeTracker.markChanged();
+    await loadProducts();
   }
 
   Future<void> deleteProduct(int id) async {
-    isLoading.value = true;
-    error.value = null;
-    try {
-      await _productRepository.delete(id);
-      _changeTracker.markChanged();
-      await loadProducts();
-    } catch (e) {
-      error.value = e.toString();
-      rethrow;
-    } finally {
-      isLoading.value = false;
-    }
+    await _productRepository.delete(id);
+    _changeTracker.markChanged();
+    await loadProducts();
   }
 }
