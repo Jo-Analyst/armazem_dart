@@ -136,7 +136,7 @@ class ProductRepository {
       query += ' AND LOWER(volume) = LOWER(?)';
       args.add(volume.trim());
     } else {
-      query += ' AND (volume IS NULL OR volume = "")';
+      query += " AND (volume IS NULL OR volume = '')";
     }
     
     if (excludeId != null) {

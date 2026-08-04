@@ -9,10 +9,10 @@ class CategoryRepository {
   Future<int> insert(CategoryModel category) async {
     final db = await _dbHelper.database;
     
-    // Check if category with same name already exists
+    // Check if category with same name (case-insensitive) already exists
     final existing = await db.query(
       'categories',
-      where: 'name = ?',
+      where: 'LOWER(name) = LOWER(?)',
       whereArgs: [category.name.trim()],
     );
     
@@ -35,10 +35,10 @@ class CategoryRepository {
   Future<int> update(CategoryModel category) async {
     final db = await _dbHelper.database;
     
-    // Check if another category with same name already exists
+    // Check if another category with same name (case-insensitive) already exists
     final existing = await db.query(
       'categories',
-      where: 'name = ? AND id != ?',
+      where: 'LOWER(name) = LOWER(?) AND id != ?',
       whereArgs: [category.name.trim(), category.id],
     );
     
