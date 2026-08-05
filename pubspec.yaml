@@ -111,10 +111,15 @@ flutter:
 
 msix_config:
     display_name: Almoxarifado
-    output_name: Almoxarifado 
+    output_name: Almoxarifado
     publisher_display_name: Joelmir Rogério Carvalho
-    # identity_name: com.promocaosocial.cras.armazem
+    identity_name: com.flutter.armazem
     logo_path: assets/images/logo_image.png
+    capabilities: >-
+      runFullTrust,
+      internetClient,
+      internetClientServer,
+      privateNetworkClientServer
 
 flutter_launcher_icons:
   android: "launcher_icon"
