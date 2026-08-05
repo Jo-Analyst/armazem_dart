@@ -6,11 +6,11 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'core/locator/locator.dart';
 import 'core/routes/app_routes.dart';
 
-Future<void> main() async {
+Future<void> main(List<String> args) async {
   WidgetsFlutterBinding.ensureInitialized();
 
   if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
-    await WindowsManage.initialize();
+    await WindowsManage.initialize(args);
   }
 
   setupLocator();

@@ -54,6 +54,7 @@ dependencies:
   msix: ^3.18.0
   animated_text_kit: ^4.3.0
   window_manager: ^0.4.2
+  windows_single_instance: ^1.2.0
 
 dev_dependencies:
   flutter_test:
