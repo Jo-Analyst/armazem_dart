@@ -8,7 +8,7 @@ class WindowsManage {
 
     WindowOptions windowOptions = const WindowOptions(
       minimumSize: Size(800, 600),
-      // center: true,
+      center: true,
     );
 
     windowManager.waitUntilReadyToShow(windowOptions, () async {
