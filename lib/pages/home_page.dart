@@ -8,7 +8,6 @@ import 'package:window_manager/window_manager.dart';
 import '../controllers/backup_controller.dart';
 import '../core/locator/locator.dart';
 import '../controllers/settings_controller.dart';
-import '../core/routes/app_routes.dart';
 import '../core/utils/error_utils.dart';
 import 'categories/categories_page.dart';
 import 'products/products_page.dart';
