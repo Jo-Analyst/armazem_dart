@@ -225,19 +225,17 @@ class _HomePageState extends State<HomePage> with WindowListener {
     final isDesktop = MediaQuery.of(context).size.width >= 800;
 
     return Scaffold(
-      appBar: !isDesktop
-          ? AppBar(
-              title: const Text('Almoxarifado'),
-              elevation: 2,
-              actions: [
-                IconButton(
-                  icon: const Icon(Icons.exit_to_app),
-                  tooltip: 'Sair',
-                  onPressed: () => _confirmarSaida(context),
-                ),
-              ],
-            )
-          : null,
+      appBar: AppBar(
+        title: const Text('Almoxarifado'),
+        elevation: 2,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.exit_to_app),
+            tooltip: 'Sair',
+            onPressed: () => _confirmarSaida(context),
+          ),
+        ],
+      ),
       drawer: !isDesktop
           ? Drawer(
               child: ListView(
