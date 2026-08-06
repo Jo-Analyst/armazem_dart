@@ -115,6 +115,7 @@ msix_config:
     publisher_display_name: Joelmir Rogério Carvalho
     identity_name: com.flutter.armazem
     logo_path: assets/images/logo_image.png
+    protocol_activation: armazem
     capabilities: >-
       runFullTrust,
       internetClient,

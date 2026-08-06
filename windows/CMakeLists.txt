@@ -108,3 +108,8 @@ if(EXISTS "${AOT_LIBRARY}")
     CONFIGURATIONS Profile;Release
     COMPONENT Runtime)
 endif()
+
+# Bundling sqlite3.dll required by sqflite_common_ffi
+install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/sqlite3.dll"
+  DESTINATION "${CMAKE_INSTALL_PREFIX}"
+  COMPONENT Runtime)
